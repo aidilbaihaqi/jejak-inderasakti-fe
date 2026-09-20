@@ -4,7 +4,7 @@ import { PinInput } from "../ui/PinInput";
 import { StickerButton } from "../ui/StickerButton";
 import { ArrowLeft, QrCode, Ticket, Sparkles } from "lucide-react";
 
-interface P2Props {
+interface PinEntryProps {
   pin: string;
   onChangePin: (pin: string) => void;
   onEnterRoom: () => void;
@@ -14,7 +14,7 @@ interface P2Props {
   error?: string;
 }
 
-export const P2_PinEntry: React.FC<P2Props> = ({
+export const PinEntry: React.FC<PinEntryProps> = ({
   pin,
   onChangePin,
   onEnterRoom,

@@ -4,13 +4,13 @@ import { StickerButton } from "../ui/StickerButton";
 import { PaperCard } from "../ui/PaperCard";
 import { MapPin, ArrowRight, Compass } from "lucide-react";
 
-interface P5Props {
+interface IslandMapProps {
   currentStage: number; // 1 to 5
   onContinue: () => void;
   lang: "id" | "en";
 }
 
-export const P5_IslandMap: React.FC<P5Props> = ({
+export const IslandMap: React.FC<IslandMapProps> = ({
   currentStage = 1,
   onContinue,
   lang,

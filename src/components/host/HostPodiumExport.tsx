@@ -17,7 +17,7 @@ interface FinalResult {
   timeTaken: string;
 }
 
-interface H5Props {
+interface HostPodiumExportProps {
   roomCode: string;
   roomName: string;
   results?: FinalResult[];
@@ -36,7 +36,7 @@ const DEFAULT_RESULTS: FinalResult[] = [
   { rank: 8, name: "Maya", school: "SDN 001 Tanjungpinang", avatarId: "8", score: 6500, correctAnswers: 7, totalQuestions: 15, timeTaken: "6m 50s" },
 ];
 
-export const H5_HostPodiumExport: React.FC<H5Props> = ({
+export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
   roomCode = "482913",
   roomName = "Kelas 8-B — Sejarah Riau",
   results = DEFAULT_RESULTS,

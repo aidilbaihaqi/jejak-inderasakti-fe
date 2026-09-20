@@ -5,7 +5,7 @@ import { PaperCard } from "../ui/PaperCard";
 import { SITES_DATA } from "../assets/PulauPenyengatMap";
 import { Trophy, Sparkles, ArrowRight } from "lucide-react";
 
-interface P9Props {
+interface StageSummaryProps {
   stageId: number; // 1 to 5
   stageScore: number;
   totalScore: number;
@@ -15,7 +15,7 @@ interface P9Props {
   lang: "id" | "en";
 }
 
-export const P9_StageSummary: React.FC<P9Props> = ({
+export const StageSummary: React.FC<StageSummaryProps> = ({
   stageId = 1,
   stageScore = 1750,
   totalScore = 4250,

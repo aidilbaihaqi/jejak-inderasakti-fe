@@ -12,7 +12,7 @@ interface JoinedHostPlayer {
   avatarId: string;
 }
 
-interface H3Props {
+interface HostLobbyProps {
   roomCode: string;
   roomName: string;
   gradeLevel: string;
@@ -35,7 +35,7 @@ const DEFAULT_HOST_PLAYERS: JoinedHostPlayer[] = [
   { id: "8", name: "Maya", school: "SDN 001 Tanjungpinang", avatarId: "8" },
 ];
 
-export const H3_HostLobby: React.FC<H3Props> = ({
+export const HostLobby: React.FC<HostLobbyProps> = ({
   roomCode = "482913",
   roomName = "Kelas 8-B — Sejarah Riau",
   gradeLevel = "SMP",

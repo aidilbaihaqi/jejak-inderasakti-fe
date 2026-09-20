@@ -13,7 +13,7 @@ interface TopPlayer {
   score: number;
 }
 
-interface P10Props {
+interface FinalPodiumProps {
   playerName: string;
   playerRank: number;
   totalPlayers: number;
@@ -31,7 +31,7 @@ const DEFAULT_TOP_PLAYERS: TopPlayer[] = [
   { rank: 3, name: "Siti", avatarId: "2", score: 10850 },
 ];
 
-export const P10_FinalPodium: React.FC<P10Props> = ({
+export const FinalPodium: React.FC<FinalPodiumProps> = ({
   playerName,
   playerRank = 1,
   totalPlayers = 8,

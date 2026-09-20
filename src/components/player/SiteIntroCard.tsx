@@ -5,7 +5,7 @@ import { StickerButton } from "../ui/StickerButton";
 import { PaperCard } from "../ui/PaperCard";
 import { BookOpen, FastForward } from "lucide-react";
 
-interface P6Props {
+interface SiteIntroCardProps {
   stageId: number; // 1 to 5
   onStartQuiz: () => void;
   lang: "id" | "en";
@@ -88,7 +88,7 @@ const SITE_INTROS: Record<
   },
 };
 
-export const P6_SiteIntroCard: React.FC<P6Props> = ({
+export const SiteIntroCard: React.FC<SiteIntroCardProps> = ({
   stageId = 1,
   onStartQuiz,
   lang,

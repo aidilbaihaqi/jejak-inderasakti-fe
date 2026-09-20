@@ -5,13 +5,13 @@ import { StickerButton } from "../ui/StickerButton";
 import { PaperCard } from "../ui/PaperCard";
 import { Sparkles } from "lucide-react";
 
-interface P1Props {
+interface LanguageSelectProps {
   selectedLang: "id" | "en";
   onSelectLang: (lang: "id" | "en") => void;
   onNext: () => void;
 }
 
-export const P1_LanguageSelect: React.FC<P1Props> = ({
+export const LanguageSelect: React.FC<LanguageSelectProps> = ({
   selectedLang,
   onSelectLang,
   onNext,

@@ -1,22 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { P1_LanguageSelect } from "@/components/player/P1_LanguageSelect";
-import { P2_PinEntry } from "@/components/player/P2_PinEntry";
-import { P3_Registration } from "@/components/player/P3_Registration";
-import { P4_Lobby } from "@/components/player/P4_Lobby";
-import { P5_IslandMap } from "@/components/player/P5_IslandMap";
-import { P6_SiteIntroCard } from "@/components/player/P6_SiteIntroCard";
-import { P7_QuizQuestion, QuestionData } from "@/components/player/P7_QuizQuestion";
-import { P8_AnswerFeedback } from "@/components/player/P8_AnswerFeedback";
-import { P9_StageSummary } from "@/components/player/P9_StageSummary";
-import { P10_FinalPodium } from "@/components/player/P10_FinalPodium";
+import { LanguageSelect } from "@/components/player/LanguageSelect";
+import { PinEntry } from "@/components/player/PinEntry";
+import { Registration } from "@/components/player/Registration";
+import { PlayerLobby } from "@/components/player/PlayerLobby";
+import { IslandMap } from "@/components/player/IslandMap";
+import { SiteIntroCard } from "@/components/player/SiteIntroCard";
+import { QuizQuestion, QuestionData } from "@/components/player/QuizQuestion";
+import { AnswerFeedback } from "@/components/player/AnswerFeedback";
+import { StageSummary } from "@/components/player/StageSummary";
+import { FinalPodium } from "@/components/player/FinalPodium";
 
-import { H1_HostLogin } from "@/components/host/H1_HostLogin";
-import { H2_CreateRoom, HostRoom } from "@/components/host/H2_CreateRoom";
-import { H3_HostLobby } from "@/components/host/H3_HostLobby";
-import { H4_HostMonitor } from "@/components/host/H4_HostMonitor";
-import { H5_HostPodiumExport } from "@/components/host/H5_HostPodiumExport";
+import { HostLogin } from "@/components/host/HostLogin";
+import { CreateRoom, HostRoom } from "@/components/host/CreateRoom";
+import { HostLobby } from "@/components/host/HostLobby";
+import { HostMonitor } from "@/components/host/HostMonitor";
+import { HostPodiumExport } from "@/components/host/HostPodiumExport";
 
 import {
   Compass,
@@ -404,7 +404,7 @@ export default function App() {
           /* Native Player Screen: 100% width on phone, elegant centered column on tablet/desktop */
           <div className="w-full max-w-md mx-auto flex-1 flex flex-col justify-between">
             {currentStep === "pilih-bahasa" && (
-              <P1_LanguageSelect
+              <LanguageSelect
                 selectedLang={lang}
                 onSelectLang={setLang}
                 onNext={() => setCurrentStep("masukkan-pin")}
@@ -412,7 +412,7 @@ export default function App() {
             )}
 
             {currentStep === "masukkan-pin" && (
-              <P2_PinEntry
+              <PinEntry
                 pin={pin}
                 onChangePin={setPin}
                 onEnterRoom={() => setCurrentStep("daftar-peserta")}
@@ -423,7 +423,7 @@ export default function App() {
             )}
 
             {currentStep === "daftar-peserta" && (
-              <P3_Registration
+              <Registration
                 name={playerName}
                 setName={setPlayerName}
                 school={school}
@@ -441,7 +441,7 @@ export default function App() {
             )}
 
             {currentStep === "ruang-tunggu" && (
-              <P4_Lobby
+              <PlayerLobby
                 roomCode={pin}
                 playerName={playerName}
                 playerAvatarId={avatarId}
@@ -451,7 +451,7 @@ export default function App() {
             )}
 
             {currentStep === "peta-jelajah" && (
-              <P5_IslandMap
+              <IslandMap
                 currentStage={currentStage}
                 onContinue={() => setCurrentStep("info-situs")}
                 lang={lang}
@@ -459,7 +459,7 @@ export default function App() {
             )}
 
             {currentStep === "info-situs" && (
-              <P6_SiteIntroCard
+              <SiteIntroCard
                 stageId={currentStage}
                 onStartQuiz={() => setCurrentStep("kuis-soal")}
                 lang={lang}
@@ -467,7 +467,7 @@ export default function App() {
             )}
 
             {currentStep === "kuis-soal" && (
-              <P7_QuizQuestion
+              <QuizQuestion
                 question={MOCK_QUESTIONS[currentStage] || MOCK_QUESTIONS[1]}
                 score={playerScore}
                 streak={streak}
@@ -480,7 +480,7 @@ export default function App() {
             )}
 
             {currentStep === "hasil-jawaban" && (
-              <P8_AnswerFeedback
+              <AnswerFeedback
                 question={MOCK_QUESTIONS[currentStage] || MOCK_QUESTIONS[1]}
                 userAnswerKey={lastAnswer.key}
                 isCorrect={lastAnswer.isCorrect}
@@ -493,7 +493,7 @@ export default function App() {
             )}
 
             {currentStep === "kartu-warisan" && (
-              <P9_StageSummary
+              <StageSummary
                 stageId={currentStage}
                 stageScore={lastAnswer.earnedPoints || 1750}
                 totalScore={playerScore}
@@ -505,7 +505,7 @@ export default function App() {
             )}
 
             {currentStep === "podium-juara" && (
-              <P10_FinalPodium
+              <FinalPodium
                 playerName={playerName}
                 playerRank={1}
                 totalPlayers={8}
@@ -524,7 +524,7 @@ export default function App() {
           /* Host Projector Views */
           <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between p-4 sm:p-6">
             {currentStep === "host-login" && (
-              <H1_HostLogin
+              <HostLogin
                 onLoginSuccess={(email) => {
                   setHostEmail(email);
                   setCurrentStep("host-buat-room");
@@ -534,7 +534,7 @@ export default function App() {
             )}
 
             {currentStep === "host-buat-room" && (
-              <H2_CreateRoom
+              <CreateRoom
                 rooms={hostRooms}
                 onSelectRoom={handleSelectRoom}
                 onCreateRoom={handleCreateHostRoom}
@@ -544,7 +544,7 @@ export default function App() {
             )}
 
             {currentStep === "host-lobby" && (
-              <H3_HostLobby
+              <HostLobby
                 roomCode={currentHostRoom.pin}
                 roomName={currentHostRoom.name}
                 gradeLevel={currentHostRoom.gradeLevel}
@@ -556,7 +556,7 @@ export default function App() {
             )}
 
             {currentStep === "host-monitor" && (
-              <H4_HostMonitor
+              <HostMonitor
                 roomCode={currentHostRoom.pin}
                 roomName={currentHostRoom.name}
                 onEndSession={handleEndHostSession}
@@ -565,7 +565,7 @@ export default function App() {
             )}
 
             {currentStep === "host-hasil-ekspor" && (
-              <H5_HostPodiumExport
+              <HostPodiumExport
                 roomCode={currentHostRoom.pin}
                 roomName={currentHostRoom.name}
                 onNewSession={() => setCurrentStep("host-buat-room")}

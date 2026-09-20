@@ -21,7 +21,7 @@ export interface QuestionData {
   explanationEn: string;
 }
 
-interface P7Props {
+interface QuizQuestionProps {
   question: QuestionData;
   score: number;
   streak: number;
@@ -32,7 +32,7 @@ interface P7Props {
   onToggleLang?: () => void;
 }
 
-export const P7_QuizQuestion: React.FC<P7Props> = ({
+export const QuizQuestion: React.FC<QuizQuestionProps> = ({
   question,
   score,
   streak,

@@ -4,7 +4,7 @@ import { StickerButton } from "../ui/StickerButton";
 import { AvatarIcon, AVATAR_LIST } from "../assets/AvatarCollection";
 import { ArrowLeft, School, User, CheckCircle2, Shuffle } from "lucide-react";
 
-interface P3Props {
+interface RegistrationProps {
   name: string;
   setName: (name: string) => void;
   school: string;
@@ -31,7 +31,7 @@ const COMMON_SCHOOLS = [
   "Umum / Pengunjung",
 ];
 
-export const P3_Registration: React.FC<P3Props> = ({
+export const Registration: React.FC<RegistrationProps> = ({
   name,
   setName,
   school,

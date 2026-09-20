@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { QuestionData } from "./P7_QuizQuestion";
+import { QuestionData } from "./QuizQuestion";
 import { MascotSakti } from "../assets/MascotSakti";
 import { PaperCard } from "../ui/PaperCard";
 import { StickerButton } from "../ui/StickerButton";
 import { CheckCircle2, XCircle, Flame, ArrowRight, Trophy, Zap } from "lucide-react";
 
-interface P8Props {
+interface AnswerFeedbackProps {
   question: QuestionData;
   userAnswerKey: "A" | "B" | "C" | "D";
   isCorrect: boolean;
@@ -16,7 +16,7 @@ interface P8Props {
   lang: "id" | "en";
 }
 
-export const P8_AnswerFeedback: React.FC<P8Props> = ({
+export const AnswerFeedback: React.FC<AnswerFeedbackProps> = ({
   question,
   userAnswerKey,
   isCorrect,

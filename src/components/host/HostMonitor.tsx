@@ -16,7 +16,7 @@ interface LivePlayerScore {
   accuracy: string; // e.g. "5/5"
 }
 
-interface H4Props {
+interface HostMonitorProps {
   roomCode: string;
   roomName: string;
   onEndSession: () => void;
@@ -34,7 +34,7 @@ const DEFAULT_MONITOR_PLAYERS: LivePlayerScore[] = [
   { id: "8", name: "Maya", avatarId: "8", score: 6500, stage: 2, question: 2, totalStages: 5, accuracy: "6/8" },
 ];
 
-export const H4_HostMonitor: React.FC<H4Props> = ({
+export const HostMonitor: React.FC<HostMonitorProps> = ({
   roomCode = "482913",
   roomName = "Kelas 8-B — Sejarah Riau",
   onEndSession,

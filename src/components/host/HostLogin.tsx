@@ -4,12 +4,12 @@ import { PaperCard } from "../ui/PaperCard";
 import { StickerButton } from "../ui/StickerButton";
 import { KeyRound, Mail, ShieldCheck, ArrowRight } from "lucide-react";
 
-interface H1Props {
+interface HostLoginProps {
   onLoginSuccess: (hostEmail: string) => void;
   onBackToPlayer: () => void;
 }
 
-export const H1_HostLogin: React.FC<H1Props> = ({
+export const HostLogin: React.FC<HostLoginProps> = ({
   onLoginSuccess,
   onBackToPlayer,
 }) => {

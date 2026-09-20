@@ -11,7 +11,7 @@ interface JoinedPlayer {
   isSelf?: boolean;
 }
 
-interface P4Props {
+interface PlayerLobbyProps {
   roomCode: string;
   playerName: string;
   playerAvatarId: string;
@@ -31,7 +31,7 @@ const DEFAULT_PLAYERS: JoinedPlayer[] = [
   { id: "p8", name: "Maya", avatarId: "8" },
 ];
 
-export const P4_Lobby: React.FC<P4Props> = ({
+export const PlayerLobby: React.FC<PlayerLobbyProps> = ({
   roomCode,
   playerName,
   playerAvatarId,

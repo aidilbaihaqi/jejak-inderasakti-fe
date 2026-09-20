@@ -27,7 +27,7 @@ export interface HostRoom {
   createdAt: string;
 }
 
-interface H2Props {
+interface CreateRoomProps {
   rooms?: HostRoom[];
   onSelectRoom: (room: HostRoom, action: "lobby" | "monitor" | "podium") => void;
   onCreateRoom: (config: {
@@ -76,7 +76,7 @@ const INITIAL_ROOMS: HostRoom[] = [
   },
 ];
 
-export const H2_CreateRoom: React.FC<H2Props> = ({
+export const CreateRoom: React.FC<CreateRoomProps> = ({
   rooms,
   onSelectRoom,
   onCreateRoom,
