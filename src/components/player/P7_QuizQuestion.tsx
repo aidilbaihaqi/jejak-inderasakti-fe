@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { StageHeader } from "../ui/StageHeader";
-import { TimerBar } from "../ui/TimerBar";
 import { AnswerTile, AnswerState } from "../ui/AnswerTile";
-import { PaperCard } from "../ui/PaperCard";
 import { ScoreChip } from "../ui/ScoreChip";
 import { SITES_DATA } from "../assets/PulauPenyengatMap";
+import { Flame, Clock, Sparkles } from "lucide-react";
 
 export interface QuestionData {
   id: string;
@@ -40,11 +38,9 @@ export const P7_QuizQuestion: React.FC<P7Props> = ({
   streak,
   onAnswer,
   lang,
-  isMuted,
-  onToggleMute,
-  onToggleLang,
 }) => {
-  const [remainingTime, setRemainingTime] = useState(15);
+  const totalSeconds = 15;
+  const [remainingTime, setRemainingTime] = useState(totalSeconds);
   const [selectedKey, setSelectedKey] = useState<"A" | "B" | "C" | "D" | null>(
     null
   );
@@ -55,7 +51,6 @@ export const P7_QuizQuestion: React.FC<P7Props> = ({
     if (selectedKey !== null) return; // Stop timer once answered
 
     if (remainingTime <= 0) {
-      // Time up! Auto submit wrong
       onAnswer("A", false);
       return;
     }
@@ -71,57 +66,82 @@ export const P7_QuizQuestion: React.FC<P7Props> = ({
     if (selectedKey !== null) return;
     setSelectedKey(key);
     const isCorrect = key === question.correctKey;
-    // Brief delay to trigger selected state before moving to feedback screen
     setTimeout(() => {
       onAnswer(key, isCorrect);
     }, 350);
   };
 
-  return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[640px] p-4 sm:p-5">
-      {/* Stage Header */}
-      <div className="w-full space-y-3">
-        <StageHeader
-          siteName={lang === "id" ? site.name : site.nameEn}
-          siteColor={site.color}
-          stageNumber={question.stageId}
-          questionNumber={question.questionNumber}
-          totalQuestions={question.totalQuestions}
-          isMuted={isMuted}
-          onToggleMute={onToggleMute}
-          lang={lang}
-          onToggleLang={onToggleLang}
-        />
+  const timerPct = Math.max(0, (remainingTime / totalSeconds) * 100);
+  const isUrgent = remainingTime <= 5;
 
-        {/* Score & Timer Row */}
-        <div className="flex items-center justify-between gap-3">
-          <ScoreChip score={score} streak={streak} />
-          <div className="flex-1 max-w-[220px]">
-            <TimerBar
-              durationSeconds={15}
-              remainingSeconds={remainingTime}
-            />
+  return (
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[calc(100dvh-60px)] px-3.5 py-2.5 pb-safe select-none">
+      {/* Quizizz Signature Top Edge Timer Bar */}
+      <div className="w-full h-2 bg-kraft/70 rounded-full border border-tinta/30 overflow-hidden mb-2">
+        <div
+          className={`h-full transition-all duration-1000 ease-linear rounded-full ${
+            isUrgent ? "bg-salah animate-pulse" : "bg-kuning"
+          }`}
+          style={{ width: `${timerPct}%` }}
+        />
+      </div>
+
+      {/* Quizizz Live Header Row */}
+      <div className="flex items-center justify-between gap-2 px-1 mb-2">
+        {/* Left: Stage & Question Counter */}
+        <div className="flex items-center gap-2">
+          <div
+            className="w-3.5 h-3.5 rounded-full border-2 border-tinta flex-shrink-0"
+            style={{ backgroundColor: site.color }}
+          />
+          <div className="flex flex-col">
+            <span className="font-display font-black text-xs sm:text-sm text-tinta leading-tight">
+              {lang === "id" ? site.name : site.nameEn}
+            </span>
+            <span className="font-label text-[10px] text-coklat font-bold">
+              {lang === "id"
+                ? `Soal ${question.questionNumber} dari ${question.totalQuestions}`
+                : `Question ${question.questionNumber} of ${question.totalQuestions}`}
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Score & Streak Badge */}
+        <div className="flex items-center gap-2">
+          {streak >= 2 && (
+            <div className="px-2.5 py-1 rounded-xl bg-salah text-white border-2 border-tinta font-display font-black text-xs flex items-center gap-1 shadow-stiker-sm animate-bounce">
+              <Flame className="w-3.5 h-3.5 fill-white text-white" />
+              <span>{streak}x</span>
+            </div>
+          )}
+
+          <div className="px-3 py-1 rounded-xl bg-kuning text-tinta border-2 border-tinta font-display font-black text-sm shadow-stiker-sm flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-coklat" />
+            <span>{score.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      {/* Main Question Card (Memo Style) */}
+      {/* Quizizz Center Question Card */}
       <div className="my-auto w-full py-2">
-        <PaperCard
-          variant="memo"
-          washiTape
-          washiTapeColor={site.color}
-          washiTapeText={`PERTANYAAN ${question.questionNumber} DARI ${question.totalQuestions}`}
-          className="p-5 sm:p-6"
-        >
-          <h2 className="font-display font-extrabold text-xl sm:text-2xl text-tinta leading-snug">
+        <div className="w-full bg-kertas-putih rounded-3xl border-3 border-tinta shadow-stiker p-5 sm:p-6 text-center relative">
+          {/* Question Text */}
+          <h2 className="font-display font-extrabold text-lg sm:text-xl md:text-2xl text-tinta leading-snug">
             {lang === "id" ? question.textId : question.textEn}
           </h2>
-        </PaperCard>
+
+          {/* Time Countdown Badge */}
+          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-kraft/50 border border-tinta/30 font-label font-bold text-xs text-coklat">
+            <Clock className="w-3 h-3 text-coklat" />
+            <span>
+              {remainingTime} {lang === "id" ? "detik tersisa" : "seconds left"}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* 4 Large Answer Tiles (Thumb zone, min height 64px) */}
-      <div className="w-full space-y-3 pt-2">
+      {/* Quizizz 2x2 Answer Grid (Thumb Zone - 4 Vibrant Tactile Buttons) */}
+      <div className="w-full grid grid-cols-2 gap-2.5 sm:gap-3 pt-2 pb-1">
         {question.options.map((opt) => {
           let state: AnswerState = "idle";
           if (selectedKey === opt.key) {
@@ -134,6 +154,7 @@ export const P7_QuizQuestion: React.FC<P7Props> = ({
               optionKey={opt.key}
               text={lang === "id" ? opt.textId : opt.textEn}
               state={state}
+              layout="grid"
               onClick={() => handleSelectOption(opt.key)}
               disabled={selectedKey !== null}
             />

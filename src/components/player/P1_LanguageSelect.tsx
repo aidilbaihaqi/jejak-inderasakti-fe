@@ -17,17 +17,17 @@ export const P1_LanguageSelect: React.FC<P1Props> = ({
   onNext,
 }) => {
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-between min-h-[640px] p-5">
+    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-between min-h-[100dvh] p-4 sm:p-5 pb-safe">
       {/* Top Logo */}
-      <div className="w-full flex justify-center pt-2">
+      <div className="w-full flex justify-center pt-1">
         <LogoInderasakti variant="full" />
       </div>
 
       {/* Mascot Sakti Waving */}
-      <div className="my-auto flex flex-col items-center">
+      <div className="my-auto py-2 flex flex-col items-center">
         <MascotSakti
           pose="waving"
-          size={160}
+          size={130}
           speechBubble={
             selectedLang === "id"
               ? "Hai penjelajah! Pilih bahasamu yuk!"
@@ -37,8 +37,8 @@ export const P1_LanguageSelect: React.FC<P1Props> = ({
       </div>
 
       {/* Language Selection Card */}
-      <PaperCard variant="memo" washiTape washiTapeText="PILIH BAHASA / SELECT LANGUAGE" className="w-full p-5 mt-2">
-        <div className="flex flex-col gap-3">
+      <PaperCard variant="memo" washiTape washiTapeText="PILIH BAHASA / SELECT LANGUAGE" className="w-full p-4 sm:p-5 mt-1">
+        <div className="flex flex-col gap-2.5 sm:gap-3">
           {/* Bahasa Indonesia Option */}
           <button
             type="button"

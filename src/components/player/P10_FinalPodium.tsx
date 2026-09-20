@@ -74,7 +74,7 @@ export const P10_FinalPodium: React.FC<P10Props> = ({
   const p3 = topPlayers.find((p) => p.rank === 3) || DEFAULT_TOP_PLAYERS[2];
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[640px] p-5">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[100dvh] p-4 sm:p-5 pb-safe">
       {/* Top Victory Title */}
       <div className="text-center pt-1">
         <span className="font-label text-xs font-bold text-emas tracking-widest uppercase">

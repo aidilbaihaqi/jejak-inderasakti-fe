@@ -28,7 +28,7 @@ export const P9_StageSummary: React.FC<P9Props> = ({
   const isFinalStage = stageId === 5;
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[640px] p-5">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[100dvh] p-4 sm:p-5 pb-safe">
       {/* Top Badge */}
       <div className="flex items-center justify-between mb-2">
         <span className="font-label text-xs font-bold text-tinta bg-kuning px-3 py-1 rounded-full border border-tinta shadow-stiker-sm">

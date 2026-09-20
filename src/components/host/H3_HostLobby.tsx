@@ -3,7 +3,7 @@ import { PaperCard } from "../ui/PaperCard";
 import { StickerButton } from "../ui/StickerButton";
 import { LogoInderasakti } from "../assets/LogoInderasakti";
 import { AvatarIcon } from "../assets/AvatarCollection";
-import { QrCode, Users, Play, LogOut, Sparkles } from "lucide-react";
+import { QrCode, Users, Play, LogOut, Sparkles, ArrowLeft } from "lucide-react";
 
 interface JoinedHostPlayer {
   id: string;
@@ -20,7 +20,9 @@ interface H3Props {
   players?: JoinedHostPlayer[];
   onStartSession: () => void;
   onEndSession: () => void;
+  onBackToRooms?: () => void;
 }
+
 
 const DEFAULT_HOST_PLAYERS: JoinedHostPlayer[] = [
   { id: "1", name: "Bimo", school: "SDN 001 Tanjungpinang", avatarId: "1" },
@@ -41,6 +43,7 @@ export const H3_HostLobby: React.FC<H3Props> = ({
   players = DEFAULT_HOST_PLAYERS,
   onStartSession,
   onEndSession,
+  onBackToRooms,
 }) => {
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col justify-between min-h-[700px] p-5 sm:p-7">
@@ -49,6 +52,17 @@ export const H3_HostLobby: React.FC<H3Props> = ({
         <LogoInderasakti variant="horizontal" />
 
         <div className="flex items-center gap-3">
+          {onBackToRooms && (
+            <button
+              type="button"
+              onClick={onBackToRooms}
+              className="px-3 py-1.5 rounded-xl border-2 border-tinta bg-kertas-putih font-body text-xs font-bold text-tinta hover:bg-kraft/70 btn-pressable shadow-stiker-sm flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Daftar Ruangan</span>
+            </button>
+          )}
+
           <div className="px-3.5 py-1.5 rounded-xl bg-kraft border-2 border-tinta font-label text-xs font-bold text-tinta flex items-center gap-2">
             <span>{roomName}</span>
             <span className="w-1.5 h-1.5 rounded-full bg-tinta" />

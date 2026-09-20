@@ -107,7 +107,7 @@ export const P6_SiteIntroCard: React.FC<P6Props> = ({
   }, [countdown, onStartQuiz]);
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[640px] p-5">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[100dvh] p-4 sm:p-5 pb-safe">
       {/* Top Banner with Countdown */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

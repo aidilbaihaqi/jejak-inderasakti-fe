@@ -18,7 +18,7 @@ export const P5_IslandMap: React.FC<P5Props> = ({
   const currentSite = SITES_DATA[currentStage - 1] || SITES_DATA[0];
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[640px] p-5">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[100dvh] p-4 sm:p-5 pb-safe">
       {/* Header Badge */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

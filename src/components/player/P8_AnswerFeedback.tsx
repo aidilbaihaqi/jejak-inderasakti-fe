@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { QuestionData } from "./P7_QuizQuestion";
 import { MascotSakti } from "../assets/MascotSakti";
-import { ScoreChip } from "../ui/ScoreChip";
 import { PaperCard } from "../ui/PaperCard";
 import { StickerButton } from "../ui/StickerButton";
-import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, Flame, ArrowRight, Trophy, Zap } from "lucide-react";
 
 interface P8Props {
   question: QuestionData;
@@ -44,85 +43,101 @@ export const P8_AnswerFeedback: React.FC<P8Props> = ({
   return (
     <div
       onClick={onNext}
-      className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[640px] p-5 cursor-pointer select-none"
+      className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[calc(100dvh-60px)] px-3.5 py-3 pb-safe cursor-pointer select-none"
     >
-      {/* Top Score Bar */}
-      <div className="flex items-center justify-between">
-        <ScoreChip
-          score={totalScore}
-          flyScore={isCorrect ? earnedPoints : null}
-          streak={streak}
-        />
-        <div className="font-label text-xs font-bold text-coklat bg-kraft/60 px-3 py-1 rounded-full border border-tinta/30">
-          {lang === "id" ? `Lanjut dalam ${secondsLeft}s` : `Next in ${secondsLeft}s`}
-        </div>
-      </div>
-
-      {/* Center Feedback Stamp & Mascot */}
-      <div className="my-auto w-full flex flex-col items-center gap-4 py-2">
-        {/* Angled Stamp */}
-        <div className="relative">
+      {/* Top Banner (Quizizz Flash Banner) */}
+      <div
+        className={`w-full py-3.5 px-4 rounded-3xl border-3 border-tinta shadow-stiker flex items-center justify-between text-white animate-stamp-drop ${
+          isCorrect ? "bg-benar" : "bg-salah"
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
           {isCorrect ? (
-            <div className="px-6 py-2.5 bg-benar text-white border-4 border-white rounded-2xl font-display font-black text-3xl uppercase tracking-wider shadow-stiker-lg animate-stamp-drop flex items-center gap-2 -rotate-6">
-              <CheckCircle2 className="w-8 h-8 stroke-[3]" />
-              <span>BENAR!</span>
-            </div>
+            <CheckCircle2 className="w-8 h-8 stroke-[3] text-white" />
           ) : (
-            <div className="px-6 py-2.5 bg-salah text-white border-4 border-white rounded-2xl font-display font-black text-3xl uppercase tracking-wider shadow-stiker-lg animate-stamp-drop flex items-center gap-2 rotate-6">
-              <XCircle className="w-8 h-8 stroke-[3]" />
-              <span>COBA LAGI!</span>
-            </div>
+            <XCircle className="w-8 h-8 stroke-[3] text-white" />
           )}
-        </div>
-
-        {/* Mascot Reaction */}
-        <div className="flex justify-center my-1">
-          <MascotSakti
-            pose={isCorrect ? "cheering" : "encouraging"}
-            size={140}
-            speechBubble={
-              isCorrect
+          <div>
+            <h2 className="font-display font-black text-2xl leading-none">
+              {isCorrect
                 ? lang === "id"
-                  ? "Hebat sekali! Jawabanmu tepat!"
-                  : "Awesome! You nailed it!"
+                  ? "BENAR!"
+                  : "CORRECT!"
                 : lang === "id"
-                ? "Tidak apa-apa, kamu pasti bisa di soal berikutnya!"
-                : "Keep it up! You'll get the next one!"
-            }
-          />
-        </div>
-
-        {/* Historical Explanation Memo Card */}
-        <PaperCard variant="memo" className="w-full p-4 sm:p-5">
-          <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-dashed border-kraft">
-            <span className="font-label text-xs font-bold uppercase tracking-wider text-coklat">
-              {lang === "id" ? "Kunci Jawaban & Fakta:" : "Key Answer & Fact:"}
+                ? "KURANG TEPAT!"
+                : "INCORRECT!"}
+            </h2>
+            <span className="font-label text-xs font-bold opacity-90">
+              {isCorrect ? "+850 Poin Kecepatan" : "Tetap semangat!"}
             </span>
           </div>
+        </div>
 
-          {/* Correct Answer Display */}
-          <div className="mb-2">
-            <span className="font-display font-black text-base text-benar">
+        {/* Earned Points Badge */}
+        {isCorrect && (
+          <div className="px-3 py-1 bg-white text-benar border-2 border-tinta rounded-xl font-display font-black text-base shadow-sm animate-bounce">
+            +{earnedPoints.toLocaleString()}
+          </div>
+        )}
+      </div>
+
+      {/* Center Mascot & Streak Celebration */}
+      <div className="my-auto flex flex-col items-center py-2">
+        {/* Streak Flare Banner if active */}
+        {streak >= 2 && isCorrect && (
+          <div className="mb-2 px-3.5 py-1 rounded-full bg-kuning text-tinta border-2 border-tinta font-display font-black text-xs flex items-center gap-1.5 shadow-stiker-sm animate-pulse">
+            <Flame className="w-4 h-4 text-salah fill-salah" />
+            <span>{streak}x BERUNTUN! BONUS BERKALI LIPAT</span>
+          </div>
+        )}
+
+        {/* Mascot Reaction */}
+        <MascotSakti
+          pose={isCorrect ? "cheering" : "encouraging"}
+          size={140}
+          speechBubble={
+            isCorrect
+              ? lang === "id"
+                ? "Luar biasa! Jawabanmu akurat!"
+                : "Brilliant! You're on fire!"
+              : lang === "id"
+              ? "Tak apa, pelajari faktanya yuk!"
+              : "No worries, check the fact below!"
+          }
+        />
+
+        {/* Historical Explanation Box */}
+        <PaperCard variant="memo" className="w-full p-4 mt-2">
+          {/* Answer Key Reveal */}
+          <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-dashed border-kraft">
+            <span className="font-label text-xs font-bold text-coklat uppercase">
+              {lang === "id" ? "Jawaban Benar:" : "Correct Answer:"}
+            </span>
+            <span className="font-display font-black text-sm text-benar">
               {question.correctKey}. {lang === "id" ? correctOption?.textId : correctOption?.textEn}
             </span>
           </div>
 
-          {/* Explanation Text */}
-          <p className="font-body text-xs sm:text-sm text-tinta font-semibold leading-relaxed bg-kertas/50 p-2.5 rounded-xl border border-tinta/20">
+          {/* Historical Sentence */}
+          <p className="font-body text-xs sm:text-sm text-tinta font-semibold leading-relaxed">
             {lang === "id" ? question.explanationId : question.explanationEn}
           </p>
         </PaperCard>
       </div>
 
-      {/* Tap to Continue Button */}
-      <div className="w-full pt-3">
+      {/* Quizizz Tap to Continue Bar */}
+      <div className="w-full pt-2">
         <StickerButton
           variant="primary"
           size="lg"
-          className="w-full text-xl flex items-center justify-center gap-2"
+          className="w-full text-lg flex items-center justify-center gap-2"
           onClick={onNext}
         >
-          <span>{lang === "id" ? "Lanjutkan ➔" : "Continue ➔"}</span>
+          <span>
+            {lang === "id"
+              ? `Lanjut (${secondsLeft}s) ➔`
+              : `Next (${secondsLeft}s) ➔`}
+          </span>
           <ArrowRight className="w-5 h-5" />
         </StickerButton>
       </div>

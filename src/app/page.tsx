@@ -13,29 +13,45 @@ import { P9_StageSummary } from "@/components/player/P9_StageSummary";
 import { P10_FinalPodium } from "@/components/player/P10_FinalPodium";
 
 import { H1_HostLogin } from "@/components/host/H1_HostLogin";
-import { H2_CreateRoom } from "@/components/host/H2_CreateRoom";
+import { H2_CreateRoom, HostRoom } from "@/components/host/H2_CreateRoom";
 import { H3_HostLobby } from "@/components/host/H3_HostLobby";
 import { H4_HostMonitor } from "@/components/host/H4_HostMonitor";
 import { H5_HostPodiumExport } from "@/components/host/H5_HostPodiumExport";
 
-import { Smartphone, Monitor, Globe, Compass, RefreshCw } from "lucide-react";
+import {
+  Compass,
+  Globe,
+  Volume2,
+  VolumeX,
+  KeyRound,
+  Gamepad2,
+  Menu,
+  X,
+  Sparkles,
+  MapPin,
+  CheckCircle2,
+  Trophy,
+  Users,
+  School,
+  FileText,
+} from "lucide-react";
 
-export type ScreenId =
-  | "P1"
-  | "P2"
-  | "P3"
-  | "P4"
-  | "P5"
-  | "P6"
-  | "P7"
-  | "P8"
-  | "P9"
-  | "P10"
-  | "H1"
-  | "H2"
-  | "H3"
-  | "H4"
-  | "H5";
+export type ScreenKey =
+  | "pilih-bahasa"
+  | "masukkan-pin"
+  | "daftar-peserta"
+  | "ruang-tunggu"
+  | "peta-jelajah"
+  | "info-situs"
+  | "kuis-soal"
+  | "hasil-jawaban"
+  | "kartu-warisan"
+  | "podium-juara"
+  | "host-login"
+  | "host-buat-room"
+  | "host-lobby"
+  | "host-monitor"
+  | "host-hasil-ekspor";
 
 const MOCK_QUESTIONS: Record<number, QuestionData> = {
   1: {
@@ -135,12 +151,48 @@ const MOCK_QUESTIONS: Record<number, QuestionData> = {
   },
 };
 
+const INITIAL_HOST_ROOMS: HostRoom[] = [
+  {
+    id: "room-1",
+    pin: "482913",
+    name: "Kelas 8-B — Sejarah Riau",
+    gradeLevel: "SMP",
+    sessionMode: "NORMAL",
+    playerCount: 8,
+    maxPlayers: 15,
+    status: "LOBBY",
+    createdAt: "Baru saja",
+  },
+  {
+    id: "room-2",
+    pin: "719204",
+    name: "Kelas 7-A — Jelajah Penyengat",
+    gradeLevel: "SMP",
+    sessionMode: "NORMAL",
+    playerCount: 12,
+    maxPlayers: 15,
+    status: "RUNNING",
+    createdAt: "15 menit lalu",
+  },
+  {
+    id: "room-3",
+    pin: "531980",
+    name: "Kelas 9-C — Sesi Singkat",
+    gradeLevel: "SMP",
+    sessionMode: "QUICK",
+    playerCount: 15,
+    maxPlayers: 15,
+    status: "FINISHED",
+    createdAt: "45 menit lalu",
+  },
+];
+
 export default function App() {
-  // Navigation & Screen Controller
-  const [currentScreen, setCurrentScreen] = useState<ScreenId>("P1");
-  const [deviceFrame, setDeviceFrame] = useState<"mobile" | "responsive">("mobile");
+  // Navigation State
+  const [currentStep, setCurrentStep] = useState<ScreenKey>("pilih-bahasa");
   const [lang, setLang] = useState<"id" | "en">("id");
   const [isMuted, setIsMuted] = useState(false);
+  const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
 
   // Player State
   const [pin, setPin] = useState("482913");
@@ -162,13 +214,71 @@ export default function App() {
     earnedPoints: 850,
   });
 
-  // Host State
+  // Host Multi-Room State
   const [hostEmail, setHostEmail] = useState("guru.sejarah@penyengat.id");
-  const [roomConfig, setRoomConfig] = useState({
-    gradeLevel: "SMP",
-    sessionMode: "NORMAL",
-    roomName: "Kelas 8-B — Sejarah Riau",
-  });
+  const [hostRooms, setHostRooms] = useState<HostRoom[]>(INITIAL_HOST_ROOMS);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>("room-1");
+
+  const currentHostRoom =
+    hostRooms.find((r) => r.id === selectedRoomId) ||
+    hostRooms[0] || {
+      id: "room-default",
+      pin: "482913",
+      name: "Kelas 8-B — Sejarah Riau",
+      gradeLevel: "SMP" as const,
+      sessionMode: "NORMAL" as const,
+      playerCount: 8,
+      maxPlayers: 15,
+      status: "LOBBY" as const,
+      createdAt: "Baru saja",
+    };
+
+  const handleSelectRoom = (room: HostRoom, action: "lobby" | "monitor" | "podium") => {
+    setSelectedRoomId(room.id);
+    if (action === "lobby") setCurrentStep("host-lobby");
+    else if (action === "monitor") setCurrentStep("host-monitor");
+    else if (action === "podium") setCurrentStep("host-hasil-ekspor");
+  };
+
+  const handleCreateHostRoom = (config: {
+    gradeLevel: "SD" | "SMP" | "SMA";
+    sessionMode: "NORMAL" | "QUICK";
+    roomName: string;
+    pin: string;
+  }) => {
+    const newRoom: HostRoom = {
+      id: `room-${Date.now()}`,
+      pin: config.pin,
+      name: config.roomName,
+      gradeLevel: config.gradeLevel,
+      sessionMode: config.sessionMode,
+      playerCount: 0,
+      maxPlayers: 15,
+      status: "LOBBY",
+      createdAt: "Baru saja",
+    };
+    setHostRooms((prev) => [newRoom, ...prev]);
+    setSelectedRoomId(newRoom.id);
+    setCurrentStep("host-lobby");
+  };
+
+  const handleDeleteHostRoom = (roomId: string) => {
+    setHostRooms((prev) => prev.filter((r) => r.id !== roomId));
+  };
+
+  const handleStartHostSession = () => {
+    setHostRooms((prev) =>
+      prev.map((r) => (r.id === selectedRoomId ? { ...r, status: "RUNNING" } : r))
+    );
+    setCurrentStep("host-monitor");
+  };
+
+  const handleEndHostSession = () => {
+    setHostRooms((prev) =>
+      prev.map((r) => (r.id === selectedRoomId ? { ...r, status: "FINISHED" } : r))
+    );
+    setCurrentStep("host-hasil-ekspor");
+  };
 
   const toggleLanguage = () => {
     setLang((prev) => (prev === "id" ? "en" : "id"));
@@ -183,481 +293,454 @@ export default function App() {
     } else {
       setStreak(0);
     }
-    setCurrentScreen("P8");
+    setCurrentStep("hasil-jawaban");
   };
 
   const handleNextStage = () => {
     if (currentStage >= 5) {
-      setCurrentScreen("P10");
+      setCurrentStep("podium-juara");
     } else {
       setCurrentStage((prev) => prev + 1);
-      setCurrentScreen("P5");
+      setCurrentStep("peta-jelajah");
     }
   };
 
-  const isHostView = currentScreen.startsWith("H");
+  const isHostView = currentStep.startsWith("host-");
 
   return (
-    <main className="min-h-screen bg-kertas flex flex-col justify-between selection:bg-kuning selection:text-tinta">
+    <div className="min-h-[100dvh] w-full bg-kertas text-tinta flex flex-col justify-between selection:bg-kuning selection:text-tinta relative overflow-x-hidden">
       {/* ========================================================
-          TOP DEMO CONTROL BAR (Switcher & Quick Jump)
+          MOBILE-FRIENDLY TOP NAVBAR
       ======================================================== */}
-      <header className="sticky top-0 z-50 bg-[#F3E7CF] border-b-2 border-tinta/40 px-3 py-2 shadow-sm backdrop-blur-md">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          {/* Brand & Mode Switcher */}
-          <div className="flex items-center gap-2">
-            <span className="font-display font-black text-sm text-tinta flex items-center gap-1.5">
-              <Compass className="w-4 h-4 text-emas" />
-              <span>Jejak Inderasakti</span>
-            </span>
-
-            {/* Mode Switch Pills */}
-            <div className="flex items-center rounded-xl bg-kertas-putih border-2 border-tinta p-0.5 shadow-xs">
-              <button
-                type="button"
-                onClick={() => {
-                  setDeviceFrame("mobile");
-                  setCurrentScreen("P1");
-                }}
-                className={`px-2.5 py-1 rounded-lg font-display font-extrabold text-xs flex items-center gap-1.5 transition-all ${
-                  !isHostView
-                    ? "bg-kuning text-tinta shadow-xs"
-                    : "text-coklat hover:text-tinta"
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>Peserta (P1-P10)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setDeviceFrame("responsive");
-                  setCurrentScreen("H3");
-                }}
-                className={`px-2.5 py-1 rounded-lg font-display font-extrabold text-xs flex items-center gap-1.5 transition-all ${
-                  isHostView
-                    ? "bg-kuning text-tinta shadow-xs"
-                    : "text-coklat hover:text-tinta"
-                }`}
-              >
-                <Monitor className="w-3.5 h-3.5" />
-                <span>Host Proyektor (H1-H5)</span>
-              </button>
+      <header className="sticky top-0 z-40 w-full bg-kertas-putih/95 backdrop-blur-md border-b-2 border-tinta/30 px-3.5 py-2.5 shadow-xs">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          {/* Brand Identity */}
+          <button
+            type="button"
+            onClick={() => setCurrentStep("pilih-bahasa")}
+            className="flex items-center gap-2 text-left focus:outline-none group"
+          >
+            <div className="w-8 h-8 rounded-xl bg-kuning border-2 border-tinta flex items-center justify-center shadow-stiker-sm group-hover:bg-[#FFD147] transition-all">
+              <Compass className="w-4 h-4 text-tinta" />
             </div>
-          </div>
+            <div className="flex flex-col">
+              <span className="font-display font-black text-sm text-tinta leading-none">
+                JEJAK INDERASAKTI
+              </span>
+              <span className="font-label text-[9px] text-coklat font-bold tracking-wider uppercase mt-0.5">
+                Pulau Penyengat
+              </span>
+            </div>
+          </button>
 
-          {/* Quick Jump Buttons */}
-          <div className="flex items-center gap-1 overflow-x-auto max-w-full py-0.5">
-            <span className="font-label text-[10px] font-bold text-coklat mr-1">
-              Lompat Layar:
-            </span>
-
-            {!isHostView ? (
-              /* Player Screens P1-P10 */
-              (
-                [
-                  { id: "P1", label: "P1:Bahasa" },
-                  { id: "P2", label: "P2:PIN" },
-                  { id: "P3", label: "P3:Daftar" },
-                  { id: "P4", label: "P4:Lobby" },
-                  { id: "P5", label: "P5:Peta" },
-                  { id: "P6", label: "P6:Info" },
-                  { id: "P7", label: "P7:Soal" },
-                  { id: "P8", label: "P8:Feedback" },
-                  { id: "P9", label: "P9:Ringkasan" },
-                  { id: "P10", label: "P10:Podium" },
-                ] as const
-              ).map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setCurrentScreen(s.id)}
-                  className={`px-2 py-0.5 rounded-md font-label text-[10px] font-bold border transition-all ${
-                    currentScreen === s.id
-                      ? "bg-kuning border-tinta text-tinta shadow-xs scale-105"
-                      : "bg-kertas-putih/80 border-tinta/30 text-coklat hover:bg-kraft"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))
-            ) : (
-              /* Host Screens H1-H5 */
-              (
-                [
-                  { id: "H1", label: "H1:Login" },
-                  { id: "H2", label: "H2:Buat Room" },
-                  { id: "H3", label: "H3:Lobby Host" },
-                  { id: "H4", label: "H4:Monitor Live" },
-                  { id: "H5", label: "H5:Podium & CSV" },
-                ] as const
-              ).map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setCurrentScreen(s.id)}
-                  className={`px-2 py-0.5 rounded-md font-label text-[10px] font-bold border transition-all ${
-                    currentScreen === s.id
-                      ? "bg-kuning border-tinta text-tinta shadow-xs scale-105"
-                      : "bg-kertas-putih/80 border-tinta/30 text-coklat hover:bg-kraft"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))
-            )}
-          </div>
-
-          {/* Right Controls: Device Frame Toggle & Language Toggle */}
-          <div className="flex items-center gap-1.5">
-            {!isHostView && (
-              <button
-                type="button"
-                onClick={() =>
-                  setDeviceFrame((prev) => (prev === "mobile" ? "responsive" : "mobile"))
-                }
-                className="px-2 py-1 rounded-lg border border-tinta bg-kertas-putih font-label text-xs font-bold text-tinta hover:bg-kraft btn-pressable shadow-xs flex items-center gap-1"
-                title="Ganti Tampilan Bingkai HP / Full Width"
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>{deviceFrame === "mobile" ? "Frame HP" : "Full View"}</span>
-              </button>
-            )}
-
+          {/* Right Action Icons */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Language Switcher */}
             <button
               type="button"
               onClick={toggleLanguage}
-              className="px-2 py-1 rounded-lg border border-tinta bg-kraft font-label text-xs font-bold text-tinta hover:bg-kraft/80 btn-pressable shadow-xs flex items-center gap-1"
-              title="Ganti Bahasa (ID / EN)"
+              className="px-2 py-1.5 rounded-xl border-2 border-tinta bg-kraft/60 hover:bg-kraft font-label text-xs font-bold text-tinta flex items-center gap-1 transition-all btn-pressable shadow-xs"
+              title="Ganti Bahasa / Switch Language"
             >
               <Globe className="w-3.5 h-3.5" />
               <span>{lang.toUpperCase()}</span>
+            </button>
+
+            {/* Audio Mute Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsMuted(!isMuted)}
+              className="w-8 h-8 rounded-xl border-2 border-tinta bg-kertas hover:bg-kraft/50 text-tinta flex items-center justify-center transition-all btn-pressable shadow-xs"
+              title={isMuted ? "Aktifkan Suara" : "Bisukan Suara"}
+            >
+              {isMuted ? (
+                <VolumeX className="w-3.5 h-3.5 text-coklat" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5 text-tinta" />
+              )}
+            </button>
+
+            {/* Host Login Button / Icon */}
+            {!isHostView ? (
+              <button
+                type="button"
+                onClick={() => setCurrentStep("host-login")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-kuning border-2 border-tinta font-display font-black text-xs text-tinta shadow-stiker-sm btn-pressable hover:bg-[#FFD147]"
+                title="Masuk ke Panel Host / Guru"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-tinta" />
+                <span>Masuk Host</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setCurrentStep("pilih-bahasa")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-kraft border-2 border-tinta font-display font-black text-xs text-tinta shadow-stiker-sm btn-pressable hover:bg-kraft/80"
+                title="Kembali ke Mode Kuis Siswa"
+              >
+                <Gamepad2 className="w-3.5 h-3.5 text-tinta" />
+                <span>Kuis Siswa</span>
+              </button>
+            )}
+
+            {/* Menu Drawer Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsNavDrawerOpen(true)}
+              className="w-8 h-8 rounded-xl border-2 border-tinta bg-kertas hover:bg-kraft/50 text-tinta flex items-center justify-center transition-all btn-pressable shadow-xs ml-0.5"
+              title="Menu Navigasi Lengkap"
+            >
+              <Menu className="w-4 h-4" />
             </button>
           </div>
         </div>
       </header>
 
       {/* ========================================================
-          MAIN SCREEN CONTAINER
+          MAIN VIEW AREA (Full Screen Mobile Native First)
       ======================================================== */}
-      <div className="flex-1 flex items-center justify-center p-2 sm:p-4 md:p-6">
-        {/* If Mobile Simulator Frame is active */}
-        {!isHostView && deviceFrame === "mobile" ? (
-          <div className="w-full max-w-[420px] rounded-[36px] border-4 border-tinta bg-[#FBF5E6] shadow-stiker-lg overflow-hidden relative min-h-[720px] flex flex-col justify-between p-1">
-            {/* Phone Speaker & Camera Notch */}
-            <div className="flex justify-center pt-2 pb-1">
-              <div className="w-20 h-4 bg-tinta rounded-full flex items-center justify-center">
-                <span className="w-2 h-2 rounded-full bg-tinta/40 mr-2" />
-                <span className="w-8 h-1 rounded-full bg-tinta/40" />
-              </div>
-            </div>
-
-            {/* Active Mobile Screen */}
-            <div className="flex-1 flex flex-col">
-              {currentScreen === "P1" && (
-                <P1_LanguageSelect
-                  selectedLang={lang}
-                  onSelectLang={setLang}
-                  onNext={() => setCurrentScreen("P2")}
-                />
-              )}
-
-              {currentScreen === "P2" && (
-                <P2_PinEntry
-                  pin={pin}
-                  onChangePin={setPin}
-                  onEnterRoom={() => setCurrentScreen("P3")}
-                  onBack={() => setCurrentScreen("P1")}
-                  lang={lang}
-                  onToggleLang={toggleLanguage}
-                />
-              )}
-
-              {currentScreen === "P3" && (
-                <P3_Registration
-                  name={playerName}
-                  setName={setPlayerName}
-                  school={school}
-                  setSchool={setSchool}
-                  gradeLevel={gradeLevel}
-                  setGradeLevel={setGradeLevel}
-                  gradeClass={gradeClass}
-                  setGradeClass={setGradeClass}
-                  avatarId={avatarId}
-                  setAvatarId={setAvatarId}
-                  onReady={() => setCurrentScreen("P4")}
-                  onBack={() => setCurrentScreen("P2")}
-                  lang={lang}
-                />
-              )}
-
-              {currentScreen === "P4" && (
-                <P4_Lobby
-                  roomCode={pin}
-                  playerName={playerName}
-                  playerAvatarId={avatarId}
-                  onSimulateHostStart={() => setCurrentScreen("P5")}
-                  lang={lang}
-                />
-              )}
-
-              {currentScreen === "P5" && (
-                <P5_IslandMap
-                  currentStage={currentStage}
-                  onContinue={() => setCurrentScreen("P6")}
-                  lang={lang}
-                />
-              )}
-
-              {currentScreen === "P6" && (
-                <P6_SiteIntroCard
-                  stageId={currentStage}
-                  onStartQuiz={() => setCurrentScreen("P7")}
-                  lang={lang}
-                />
-              )}
-
-              {currentScreen === "P7" && (
-                <P7_QuizQuestion
-                  question={MOCK_QUESTIONS[currentStage] || MOCK_QUESTIONS[1]}
-                  score={playerScore}
-                  streak={streak}
-                  onAnswer={handleAnswerSubmit}
-                  lang={lang}
-                  isMuted={isMuted}
-                  onToggleMute={() => setIsMuted(!isMuted)}
-                  onToggleLang={toggleLanguage}
-                />
-              )}
-
-              {currentScreen === "P8" && (
-                <P8_AnswerFeedback
-                  question={MOCK_QUESTIONS[currentStage] || MOCK_QUESTIONS[1]}
-                  userAnswerKey={lastAnswer.key}
-                  isCorrect={lastAnswer.isCorrect}
-                  earnedPoints={lastAnswer.earnedPoints}
-                  totalScore={playerScore}
-                  streak={streak}
-                  onNext={() => setCurrentScreen("P9")}
-                  lang={lang}
-                />
-              )}
-
-              {currentScreen === "P9" && (
-                <P9_StageSummary
-                  stageId={currentStage}
-                  stageScore={lastAnswer.earnedPoints || 1750}
-                  totalScore={playerScore}
-                  currentRank={3}
-                  totalPlayers={8}
-                  onNextStage={handleNextStage}
-                  lang={lang}
-                />
-              )}
-
-              {currentScreen === "P10" && (
-                <P10_FinalPodium
-                  playerName={playerName}
-                  playerRank={1}
-                  totalPlayers={8}
-                  playerScore={playerScore}
-                  correctCount={14}
-                  totalQuestions={15}
-                  onFinish={() => {
-                    setCurrentStage(1);
-                    setCurrentScreen("P1");
-                  }}
-                  lang={lang}
-                />
-              )}
-            </div>
-
-            {/* Mobile Home Bar */}
-            <div className="flex justify-center pb-2 pt-1">
-              <div className="w-32 h-1 bg-tinta/30 rounded-full" />
-            </div>
-          </div>
-        ) : (
-          /* Responsive / Full View (Desktop or Host) */
-          <div className="w-full flex justify-center">
-            {/* Player screens rendered responsive */}
-            {!isHostView && (
-              <div className="w-full max-w-lg bg-kertas-putih rounded-3xl border-3 border-tinta shadow-stiker-lg p-2 sm:p-4">
-                {currentScreen === "P1" && (
-                  <P1_LanguageSelect
-                    selectedLang={lang}
-                    onSelectLang={setLang}
-                    onNext={() => setCurrentScreen("P2")}
-                  />
-                )}
-                {currentScreen === "P2" && (
-                  <P2_PinEntry
-                    pin={pin}
-                    onChangePin={setPin}
-                    onEnterRoom={() => setCurrentScreen("P3")}
-                    onBack={() => setCurrentScreen("P1")}
-                    lang={lang}
-                    onToggleLang={toggleLanguage}
-                  />
-                )}
-                {currentScreen === "P3" && (
-                  <P3_Registration
-                    name={playerName}
-                    setName={setPlayerName}
-                    school={school}
-                    setSchool={setSchool}
-                    gradeLevel={gradeLevel}
-                    setGradeLevel={setGradeLevel}
-                    gradeClass={gradeClass}
-                    setGradeClass={setGradeClass}
-                    avatarId={avatarId}
-                    setAvatarId={setAvatarId}
-                    onReady={() => setCurrentScreen("P4")}
-                    onBack={() => setCurrentScreen("P2")}
-                    lang={lang}
-                  />
-                )}
-                {currentScreen === "P4" && (
-                  <P4_Lobby
-                    roomCode={pin}
-                    playerName={playerName}
-                    playerAvatarId={avatarId}
-                    onSimulateHostStart={() => setCurrentScreen("P5")}
-                    lang={lang}
-                  />
-                )}
-                {currentScreen === "P5" && (
-                  <P5_IslandMap
-                    currentStage={currentStage}
-                    onContinue={() => setCurrentScreen("P6")}
-                    lang={lang}
-                  />
-                )}
-                {currentScreen === "P6" && (
-                  <P6_SiteIntroCard
-                    stageId={currentStage}
-                    onStartQuiz={() => setCurrentScreen("P7")}
-                    lang={lang}
-                  />
-                )}
-                {currentScreen === "P7" && (
-                  <P7_QuizQuestion
-                    question={MOCK_QUESTIONS[currentStage] || MOCK_QUESTIONS[1]}
-                    score={playerScore}
-                    streak={streak}
-                    onAnswer={handleAnswerSubmit}
-                    lang={lang}
-                    isMuted={isMuted}
-                    onToggleMute={() => setIsMuted(!isMuted)}
-                    onToggleLang={toggleLanguage}
-                  />
-                )}
-                {currentScreen === "P8" && (
-                  <P8_AnswerFeedback
-                    question={MOCK_QUESTIONS[currentStage] || MOCK_QUESTIONS[1]}
-                    userAnswerKey={lastAnswer.key}
-                    isCorrect={lastAnswer.isCorrect}
-                    earnedPoints={lastAnswer.earnedPoints}
-                    totalScore={playerScore}
-                    streak={streak}
-                    onNext={() => setCurrentScreen("P9")}
-                    lang={lang}
-                  />
-                )}
-                {currentScreen === "P9" && (
-                  <P9_StageSummary
-                    stageId={currentStage}
-                    stageScore={lastAnswer.earnedPoints || 1750}
-                    totalScore={playerScore}
-                    currentRank={3}
-                    totalPlayers={8}
-                    onNextStage={handleNextStage}
-                    lang={lang}
-                  />
-                )}
-                {currentScreen === "P10" && (
-                  <P10_FinalPodium
-                    playerName={playerName}
-                    playerRank={1}
-                    totalPlayers={8}
-                    playerScore={playerScore}
-                    correctCount={14}
-                    totalQuestions={15}
-                    onFinish={() => {
-                      setCurrentStage(1);
-                      setCurrentScreen("P1");
-                    }}
-                    lang={lang}
-                  />
-                )}
-              </div>
+      <main className="w-full flex-1 flex flex-col justify-between">
+        {!isHostView ? (
+          /* Native Player Screen: 100% width on phone, elegant centered column on tablet/desktop */
+          <div className="w-full max-w-md mx-auto flex-1 flex flex-col justify-between">
+            {currentStep === "pilih-bahasa" && (
+              <P1_LanguageSelect
+                selectedLang={lang}
+                onSelectLang={setLang}
+                onNext={() => setCurrentStep("masukkan-pin")}
+              />
             )}
 
-            {/* Host screens rendered landscape proyektor */}
-            {isHostView && (
-              <div className="w-full">
-                {currentScreen === "H1" && (
-                  <H1_HostLogin
-                    onLoginSuccess={(email) => {
-                      setHostEmail(email);
-                      setCurrentScreen("H2");
-                    }}
-                    onBackToPlayer={() => {
-                      setDeviceFrame("mobile");
-                      setCurrentScreen("P1");
-                    }}
-                  />
-                )}
+            {currentStep === "masukkan-pin" && (
+              <P2_PinEntry
+                pin={pin}
+                onChangePin={setPin}
+                onEnterRoom={() => setCurrentStep("daftar-peserta")}
+                onBack={() => setCurrentStep("pilih-bahasa")}
+                lang={lang}
+                onToggleLang={toggleLanguage}
+              />
+            )}
 
-                {currentScreen === "H2" && (
-                  <H2_CreateRoom
-                    onCreateRoom={(cfg) => {
-                      setRoomConfig(cfg);
-                      setCurrentScreen("H3");
-                    }}
-                    onLogout={() => setCurrentScreen("H1")}
-                  />
-                )}
+            {currentStep === "daftar-peserta" && (
+              <P3_Registration
+                name={playerName}
+                setName={setPlayerName}
+                school={school}
+                setSchool={setSchool}
+                gradeLevel={gradeLevel}
+                setGradeLevel={setGradeLevel}
+                gradeClass={gradeClass}
+                setGradeClass={setGradeClass}
+                avatarId={avatarId}
+                setAvatarId={setAvatarId}
+                onReady={() => setCurrentStep("ruang-tunggu")}
+                onBack={() => setCurrentStep("masukkan-pin")}
+                lang={lang}
+              />
+            )}
 
-                {currentScreen === "H3" && (
-                  <H3_HostLobby
-                    roomCode={pin}
-                    roomName={roomConfig.roomName}
-                    gradeLevel={roomConfig.gradeLevel}
-                    sessionMode={roomConfig.sessionMode}
-                    onStartSession={() => setCurrentScreen("H4")}
-                    onEndSession={() => setCurrentScreen("H2")}
-                  />
-                )}
+            {currentStep === "ruang-tunggu" && (
+              <P4_Lobby
+                roomCode={pin}
+                playerName={playerName}
+                playerAvatarId={avatarId}
+                onSimulateHostStart={() => setCurrentStep("peta-jelajah")}
+                lang={lang}
+              />
+            )}
 
-                {currentScreen === "H4" && (
-                  <H4_HostMonitor
-                    roomCode={pin}
-                    roomName={roomConfig.roomName}
-                    onEndSession={() => setCurrentScreen("H5")}
-                  />
-                )}
+            {currentStep === "peta-jelajah" && (
+              <P5_IslandMap
+                currentStage={currentStage}
+                onContinue={() => setCurrentStep("info-situs")}
+                lang={lang}
+              />
+            )}
 
-                {currentScreen === "H5" && (
-                  <H5_HostPodiumExport
-                    roomCode={pin}
-                    roomName={roomConfig.roomName}
-                    onNewSession={() => setCurrentScreen("H2")}
-                  />
-                )}
-              </div>
+            {currentStep === "info-situs" && (
+              <P6_SiteIntroCard
+                stageId={currentStage}
+                onStartQuiz={() => setCurrentStep("kuis-soal")}
+                lang={lang}
+              />
+            )}
+
+            {currentStep === "kuis-soal" && (
+              <P7_QuizQuestion
+                question={MOCK_QUESTIONS[currentStage] || MOCK_QUESTIONS[1]}
+                score={playerScore}
+                streak={streak}
+                onAnswer={handleAnswerSubmit}
+                lang={lang}
+                isMuted={isMuted}
+                onToggleMute={() => setIsMuted(!isMuted)}
+                onToggleLang={toggleLanguage}
+              />
+            )}
+
+            {currentStep === "hasil-jawaban" && (
+              <P8_AnswerFeedback
+                question={MOCK_QUESTIONS[currentStage] || MOCK_QUESTIONS[1]}
+                userAnswerKey={lastAnswer.key}
+                isCorrect={lastAnswer.isCorrect}
+                earnedPoints={lastAnswer.earnedPoints}
+                totalScore={playerScore}
+                streak={streak}
+                onNext={() => setCurrentStep("kartu-warisan")}
+                lang={lang}
+              />
+            )}
+
+            {currentStep === "kartu-warisan" && (
+              <P9_StageSummary
+                stageId={currentStage}
+                stageScore={lastAnswer.earnedPoints || 1750}
+                totalScore={playerScore}
+                currentRank={3}
+                totalPlayers={8}
+                onNextStage={handleNextStage}
+                lang={lang}
+              />
+            )}
+
+            {currentStep === "podium-juara" && (
+              <P10_FinalPodium
+                playerName={playerName}
+                playerRank={1}
+                totalPlayers={8}
+                playerScore={playerScore}
+                correctCount={14}
+                totalQuestions={15}
+                onFinish={() => {
+                  setCurrentStage(1);
+                  setCurrentStep("pilih-bahasa");
+                }}
+                lang={lang}
+              />
+            )}
+          </div>
+        ) : (
+          /* Host Projector Views */
+          <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col justify-between p-4 sm:p-6">
+            {currentStep === "host-login" && (
+              <H1_HostLogin
+                onLoginSuccess={(email) => {
+                  setHostEmail(email);
+                  setCurrentStep("host-buat-room");
+                }}
+                onBackToPlayer={() => setCurrentStep("pilih-bahasa")}
+              />
+            )}
+
+            {currentStep === "host-buat-room" && (
+              <H2_CreateRoom
+                rooms={hostRooms}
+                onSelectRoom={handleSelectRoom}
+                onCreateRoom={handleCreateHostRoom}
+                onDeleteRoom={handleDeleteHostRoom}
+                onLogout={() => setCurrentStep("host-login")}
+              />
+            )}
+
+            {currentStep === "host-lobby" && (
+              <H3_HostLobby
+                roomCode={currentHostRoom.pin}
+                roomName={currentHostRoom.name}
+                gradeLevel={currentHostRoom.gradeLevel}
+                sessionMode={currentHostRoom.sessionMode}
+                onStartSession={handleStartHostSession}
+                onEndSession={() => setCurrentStep("host-buat-room")}
+                onBackToRooms={() => setCurrentStep("host-buat-room")}
+              />
+            )}
+
+            {currentStep === "host-monitor" && (
+              <H4_HostMonitor
+                roomCode={currentHostRoom.pin}
+                roomName={currentHostRoom.name}
+                onEndSession={handleEndHostSession}
+                onBackToRooms={() => setCurrentStep("host-buat-room")}
+              />
+            )}
+
+            {currentStep === "host-hasil-ekspor" && (
+              <H5_HostPodiumExport
+                roomCode={currentHostRoom.pin}
+                roomName={currentHostRoom.name}
+                onNewSession={() => setCurrentStep("host-buat-room")}
+                onBackToRooms={() => setCurrentStep("host-buat-room")}
+              />
             )}
           </div>
         )}
-      </div>
+      </main>
 
       {/* ========================================================
-          FOOTER INFO BAR
+          CLEAN SLIDE-OVER MOBILE MENU DRAWER
       ======================================================== */}
-      <footer className="bg-[#EAD7B0]/60 border-t border-tinta/20 py-2 px-4 text-center font-label text-[11px] text-coklat">
-        <span>✦ Jejak Inderasakti — Game Kuis Cagar Budaya Pulau Penyengat ✦ Disbudpar Kota Tanjungpinang & Yayasan Indrasakti</span>
-      </footer>
-    </main>
+      {isNavDrawerOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-fade-in">
+          <div
+            className="w-full max-w-xs sm:max-w-sm h-full bg-kertas border-l-3 border-tinta shadow-2xl p-5 flex flex-col justify-between overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Header */}
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-kraft mb-4">
+                <div className="flex items-center gap-2">
+                  <Compass className="w-5 h-5 text-emas" />
+                  <span className="font-display font-black text-lg text-tinta">
+                    Daftar Menu
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNavDrawerOpen(false)}
+                  className="w-8 h-8 rounded-full bg-kertas-putih border border-tinta flex items-center justify-center text-tinta hover:bg-kraft"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Mode Selection
+              <div className="mb-5">
+                <span className="font-label text-[11px] font-bold text-coklat block mb-2 uppercase tracking-wider">
+                  Beralih Mode
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep("pilih-bahasa");
+                      setIsNavDrawerOpen(false);
+                    }}
+                    className={`p-2.5 rounded-xl border-2 border-tinta font-display font-extrabold text-xs flex items-center justify-center gap-1.5 btn-pressable ${
+                      !isHostView
+                        ? "bg-kuning text-tinta shadow-stiker-sm"
+                        : "bg-kertas-putih text-coklat"
+                    }`}
+                  >
+                    <Gamepad2 className="w-4 h-4" />
+                    <span>Kuis Siswa</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep("host-login");
+                      setIsNavDrawerOpen(false);
+                    }}
+                    className={`p-2.5 rounded-xl border-2 border-tinta font-display font-extrabold text-xs flex items-center justify-center gap-1.5 btn-pressable ${
+                      isHostView
+                        ? "bg-kuning text-tinta shadow-stiker-sm"
+                        : "bg-kertas-putih text-coklat"
+                    }`}
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span>Panel Host</span>
+                  </button>
+                </div>
+              </div> */}
+
+              {/* Player Screen Directory with Clear Names (No P1-P10) */}
+              <div className="mb-4">
+                <span className="font-label text-[11px] font-bold text-coklat block mb-2 uppercase tracking-wider">
+                  Alur Kuis Siswa
+                </span>
+                <div className="space-y-1.5">
+                  {(
+                    [
+                      { id: "pilih-bahasa", label: "Pilih Bahasa", icon: Globe },
+                      { id: "masukkan-pin", label: "Masukkan PIN Room", icon: KeyRound },
+                      { id: "daftar-peserta", label: "Pendaftaran Profil", icon: Users },
+                      { id: "ruang-tunggu", label: "Ruang Tunggu (Lobby)", icon: Sparkles },
+                      { id: "peta-jelajah", label: "Peta Pulau Penyengat", icon: MapPin },
+                      { id: "info-situs", label: "Sekilas Sejarah Situs", icon: FileText },
+                      { id: "kuis-soal", label: "Kuis Soal Budaya", icon: CheckCircle2 },
+                      { id: "hasil-jawaban", label: "Umpan Balik Jawaban", icon: Sparkles },
+                      { id: "kartu-warisan", label: "Kartu Warisan Budaya", icon: School },
+                      { id: "podium-juara", label: "Panggung Juara (Podium)", icon: Trophy },
+                    ] as const
+                  ).map((item, idx) => {
+                    const Icon = item.icon;
+                    const isActive = currentStep === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setCurrentStep(item.id);
+                          setIsNavDrawerOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 rounded-xl border text-left font-body font-bold text-xs flex items-center justify-between transition-all ${
+                          isActive
+                            ? "bg-kuning border-tinta text-tinta shadow-stiker-sm"
+                            : "bg-kertas-putih border-tinta/30 text-coklat hover:bg-kraft"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-md bg-kraft/70 border border-tinta/30 flex items-center justify-center font-label text-[10px] font-bold text-tinta">
+                            {idx + 1}
+                          </span>
+                          <span>{item.label}</span>
+                        </div>
+                        <Icon className="w-3.5 h-3.5 text-tinta/60" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Host Screen Directory with Clear Names (No H1-H5) */}
+              <div className="mb-4">
+                <span className="font-label text-[11px] font-bold text-coklat block mb-2 uppercase tracking-wider">
+                  Panel Guru & Host
+                </span>
+                <div className="space-y-1.5">
+                  {(
+                    [
+                      { id: "host-login", label: "Masuk Akun Guru" },
+                      {
+                        id: "host-buat-room",
+                        label: `Manajemen Ruangan (${hostRooms.length}/5)`,
+                      },
+                      { id: "host-lobby", label: "Ruang Tunggu Proyektor" },
+                      { id: "host-monitor", label: "Pemantauan Langsung" },
+                      { id: "host-hasil-ekspor", label: "Hasil Akhir & Unduh CSV" },
+                    ] as { id: ScreenKey; label: string }[]
+                  ).map((item) => {
+                    const isActive = currentStep === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          setCurrentStep(item.id);
+                          setIsNavDrawerOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 rounded-xl border text-left font-body font-bold text-xs flex items-center justify-between transition-all ${
+                          isActive
+                            ? "bg-kuning border-tinta text-tinta shadow-stiker-sm"
+                            : "bg-kertas-putih border-tinta/30 text-coklat hover:bg-kraft"
+                        }`}
+                      >
+                        <span>{item.label}</span>
+                        <KeyRound className="w-3.5 h-3.5 text-tinta/60" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="pt-3 border-t border-dashed border-kraft text-center font-label text-[10px] text-coklat">
+              ✦ Jejak Inderasakti — Pulau Penyengat ✦
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

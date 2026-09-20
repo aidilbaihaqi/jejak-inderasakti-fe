@@ -1,8 +1,8 @@
 import React from "react";
 import { PaperCard } from "../ui/PaperCard";
 import { MascotSakti } from "../assets/MascotSakti";
-import { AvatarIcon, AVATAR_LIST } from "../assets/AvatarCollection";
-import { Users, Sparkles, Clock, Crown } from "lucide-react";
+import { AvatarIcon } from "../assets/AvatarCollection";
+import { Users, Sparkles, Clock, CheckCircle2 } from "lucide-react";
 
 interface JoinedPlayer {
   id: string;
@@ -43,20 +43,20 @@ export const P4_Lobby: React.FC<P4Props> = ({
   const maxPlayers = 15;
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[640px] p-5 pb-8">
-      {/* Top Room PIN Header Card */}
-      <PaperCard variant="kraft" className="w-full p-4 mb-3">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[calc(100dvh-60px)] px-4 py-3 pb-safe select-none">
+      {/* Quizizz Room PIN Banner */}
+      <PaperCard variant="kraft" className="w-full p-3.5 mb-2">
         <div className="flex items-center justify-between">
           <div>
-            <span className="font-label text-[11px] font-bold text-coklat tracking-wider uppercase block">
-              {lang === "id" ? "KODE RUANGAN" : "ROOM CODE"}
+            <span className="font-label text-[10px] font-bold text-coklat tracking-wider uppercase block">
+              {lang === "id" ? "KODE PERMAINAN" : "GAME CODE"}
             </span>
-            <span className="font-label font-extrabold text-2xl tracking-widest text-tinta">
+            <span className="font-label font-black text-2xl tracking-widest text-tinta">
               {roomCode.split("").join(" ")}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-kertas-putih border-2 border-tinta shadow-stiker-sm">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-kertas-putih border-2 border-tinta shadow-stiker-sm">
             <Users className="w-4 h-4 text-coklat" />
             <span className="font-label font-bold text-xs text-tinta">
               {currentCount}/{maxPlayers}
@@ -65,81 +65,82 @@ export const P4_Lobby: React.FC<P4Props> = ({
         </div>
       </PaperCard>
 
-      {/* Marquee Ticker */}
-      <div className="w-full overflow-hidden bg-kuning border-2 border-tinta rounded-xl py-1 px-2 shadow-stiker-sm mb-4">
-        <div className="whitespace-nowrap animate-marquee flex items-center gap-4 text-xs font-display font-extrabold text-tinta tracking-wide">
-          <span>✦ JEJAK INDERASAKTI</span>
-          <span>✦ PULAU PENYENGAT</span>
-          <span>✦ GURINDAM DUA BELAS</span>
-          <span>✦ RAJA ALI HAJI</span>
-          <span>✦ 5 SITUS CAGAR BUDAYA</span>
+      {/* Quizizz "You're in!" Center Card */}
+      <div className="my-auto w-full flex flex-col items-center text-center py-2">
+        <div className="relative mb-2">
+          <AvatarIcon id={playerAvatarId} size={90} selected />
+          <div className="absolute -bottom-1 -right-1 p-1 bg-benar text-white rounded-full border-2 border-tinta shadow-sm">
+            <CheckCircle2 className="w-4 h-4 stroke-[3]" />
+          </div>
+        </div>
+
+        <h2 className="font-display font-black text-2xl text-tinta leading-tight">
+          {lang === "id" ? `Kamu sudah bergabung, ${playerName}!` : `You're in, ${playerName}!`}
+        </h2>
+        <p className="font-body text-xs font-semibold text-coklat mt-0.5">
+          {lang === "id"
+            ? "Lihat namamu di layar proyektor kelas?"
+            : "See your nickname on the classroom screen?"}
+        </p>
+
+        {/* Mascot Thinking & Waiting Status */}
+        <div className="mt-3 flex flex-col items-center">
+          <MascotSakti
+            pose="thinking"
+            size={115}
+            speechBubble={
+              lang === "id"
+                ? "Menunggu guru/host menekan tombol Mulai..."
+                : "Waiting for host to start..."
+            }
+          />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-kraft/50 border border-tinta/30 text-xs font-label font-bold text-coklat mt-1">
+            <Clock className="w-3.5 h-3.5 animate-spin text-emas" />
+            <span>{lang === "id" ? "Status: Siap di Ruang Tunggu" : "Status: Ready in Lobby"}</span>
+          </div>
         </div>
       </div>
 
-      {/* Joined Players Grid */}
-      <PaperCard variant="memo" className="w-full p-4 flex-1 flex flex-col mb-4">
-        <div className="flex items-center justify-between mb-3 pb-2 border-b border-dashed border-kraft">
-          <span className="font-display font-black text-sm text-tinta flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-emas" />
-            {lang === "id" ? "Peserta di Lobby" : "Players in Lobby"}
+      {/* Joined Friends Drawer Preview */}
+      <PaperCard variant="memo" className="w-full p-3.5 mt-2">
+        <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-dashed border-kraft">
+          <span className="font-display font-black text-xs text-tinta flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-emas" />
+            {lang === "id" ? "Teman Seperjuangan" : "Fellow Explorers"}
           </span>
-          <span className="font-label text-xs text-coklat font-bold">
-            {lang === "id" ? "Siap bertanding" : "Ready to play"}
+          <span className="font-label text-[11px] text-coklat font-bold">
+            {currentCount} siswa
           </span>
         </div>
 
-        {/* Players Avatar List */}
-        <div className="grid grid-cols-4 gap-2.5 max-h-56 overflow-y-auto pr-1">
-          {playersList.map((player) => (
+        {/* Horizontal Scroll / Compact Grid of Joined Avatars */}
+        <div className="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar">
+          {playersList.map((p) => (
             <div
-              key={player.id}
-              className={`flex flex-col items-center p-1.5 rounded-xl border transition-all ${
-                player.isSelf
-                  ? "bg-kuning/30 border-tinta shadow-xs ring-2 ring-kuning"
-                  : "bg-kertas/40 border-tinta/40"
+              key={p.id}
+              className={`flex-shrink-0 flex flex-col items-center p-1.5 rounded-xl border transition-all ${
+                p.isSelf
+                  ? "bg-kuning/40 border-tinta shadow-xs"
+                  : "bg-kertas/60 border-tinta/30"
               }`}
             >
-              <div className="relative">
-                <AvatarIcon id={player.avatarId} size={42} />
-                {player.isSelf && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-kuning border border-tinta text-[9px] font-bold flex items-center justify-center">
-                    ★
-                  </span>
-                )}
-              </div>
-              <span className="font-body font-bold text-[11px] text-tinta truncate max-w-[65px] mt-1">
-                {player.name}
+              <AvatarIcon id={p.avatarId} size={36} />
+              <span className="font-body font-bold text-[10px] text-tinta truncate max-w-[55px] mt-1">
+                {p.name}
               </span>
             </div>
           ))}
         </div>
       </PaperCard>
 
-      {/* Waiting Status with Mascot Sakti */}
-      <div className="flex flex-col items-center text-center my-auto">
-        <MascotSakti
-          pose="thinking"
-          size={130}
-          speechBubble={
-            lang === "id"
-              ? "Menunggu guru/host memulai sesi..."
-              : "Waiting for host to start..."
-          }
-        />
-        <div className="flex items-center gap-1.5 text-xs font-label font-bold text-coklat mt-2 bg-kraft/50 px-3 py-1 rounded-full border border-tinta/30">
-          <Clock className="w-3.5 h-3.5 animate-spin" />
-          <span>{lang === "id" ? "Status: Siap di Lobby" : "Status: Ready in Lobby"}</span>
-        </div>
-      </div>
-
       {/* Host Simulation Action */}
-      <div className="w-full pt-4">
+      <div className="w-full pt-3">
         <button
           type="button"
           onClick={onSimulateHostStart}
           className="w-full py-3 px-4 rounded-2xl bg-kuning border-3 border-tinta text-tinta font-display font-black text-base shadow-stiker btn-pressable hover:bg-[#FFD147]"
         >
-          {lang === "id" ? "Host Memulai Kuis ➔" : "Host Starts Quiz ➔"}
+          {lang === "id" ? "Host Memulai Kuis Sekarang ➔" : "Host Starts Quiz Now ➔"}
         </button>
       </div>
     </div>

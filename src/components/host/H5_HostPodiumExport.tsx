@@ -22,6 +22,7 @@ interface H5Props {
   roomName: string;
   results?: FinalResult[];
   onNewSession: () => void;
+  onBackToRooms?: () => void;
 }
 
 const DEFAULT_RESULTS: FinalResult[] = [
@@ -40,6 +41,7 @@ export const H5_HostPodiumExport: React.FC<H5Props> = ({
   roomName = "Kelas 8-B — Sejarah Riau",
   results = DEFAULT_RESULTS,
   onNewSession,
+  onBackToRooms,
 }) => {
   // Fire celebratory fireworks confetti on load
   useEffect(() => {
@@ -90,6 +92,17 @@ export const H5_HostPodiumExport: React.FC<H5Props> = ({
         <LogoInderasakti variant="horizontal" />
 
         <div className="flex items-center gap-3">
+          {onBackToRooms && (
+            <button
+              type="button"
+              onClick={onBackToRooms}
+              className="px-3.5 py-1.5 rounded-xl border-2 border-tinta bg-kertas-putih font-body text-xs font-bold text-tinta hover:bg-kraft/70 btn-pressable shadow-stiker-sm flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Daftar Ruangan</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleDownloadCsv}

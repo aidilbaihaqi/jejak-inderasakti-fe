@@ -20,6 +20,7 @@ interface H4Props {
   roomCode: string;
   roomName: string;
   onEndSession: () => void;
+  onBackToRooms?: () => void;
 }
 
 const DEFAULT_MONITOR_PLAYERS: LivePlayerScore[] = [
@@ -37,6 +38,7 @@ export const H4_HostMonitor: React.FC<H4Props> = ({
   roomCode = "482913",
   roomName = "Kelas 8-B — Sejarah Riau",
   onEndSession,
+  onBackToRooms,
 }) => {
   const [secondsRemaining, setSecondsRemaining] = useState(360); // 6 mins
 
@@ -56,7 +58,17 @@ export const H4_HostMonitor: React.FC<H4Props> = ({
       <div className="flex items-center justify-between pb-4 border-b-3 border-tinta mb-5">
         <LogoInderasakti variant="horizontal" />
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {onBackToRooms && (
+            <button
+              type="button"
+              onClick={onBackToRooms}
+              className="px-3.5 py-1.5 rounded-xl border-2 border-tinta bg-kertas-putih font-body text-xs font-bold text-tinta hover:bg-kraft/70 btn-pressable shadow-stiker-sm"
+            >
+              ← Daftar Ruangan
+            </button>
+          )}
+
           {/* Room PIN Tag */}
           <div className="px-3.5 py-1.5 rounded-xl bg-kuning border-2 border-tinta font-label font-bold text-sm text-tinta shadow-stiker-sm">
             PIN: {roomCode}

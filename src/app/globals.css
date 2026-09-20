@@ -40,12 +40,33 @@
 }
 
 /* Base styling */
-body {
+html, body {
   background-color: var(--kertas);
   color: var(--tinta);
   background-image: radial-gradient(#EAD7B0 1px, transparent 1px);
   background-size: 20px 20px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
 }
+
+/* Mobile Safe Areas */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+/* Hide scrollbars for app-like experience */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 
 /* Stiker Shadow & Button Click Effects */
 .shadow-stiker {
