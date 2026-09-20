@@ -1,26 +1,242 @@
 @import "tailwindcss";
 
+@theme {
+  --color-kertas: #FBF5E6;
+  --color-kertas-putih: #FFFDF7;
+  --color-kraft: #EAD7B0;
+  --color-kuning: #FFC629;
+  --color-stabilo: #FFE58A;
+  --color-emas: #C8922A;
+  --color-coklat: #8B5A2B;
+  --color-tinta: #3A2412;
+  --color-benar: #1B7F4A;
+  --color-salah: #C53A3A;
+
+  --color-situs-masjid: #2F7D4F;
+  --color-situs-makam: #9A6B12;
+  --color-situs-istana: #B4533A;
+  --color-situs-tabib: #5F7F2E;
+  --color-situs-perigi: #2E7EA0;
+
+  --font-display: var(--font-baloo), "Baloo 2", cursive, sans-serif;
+  --font-body: var(--font-nunito), "Nunito", sans-serif;
+  --font-label: var(--font-space-mono), "Space Mono", monospace;
+
+  --radius-tile: 16px;
+  --radius-card: 24px;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --kertas: #FBF5E6;
+  --kertas-putih: #FFFDF7;
+  --kraft: #EAD7B0;
+  --kuning: #FFC629;
+  --stabilo: #FFE58A;
+  --emas: #C8922A;
+  --coklat: #8B5A2B;
+  --tinta: #3A2412;
+  --benar: #1B7F4A;
+  --salah: #C53A3A;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Base styling */
+body {
+  background-color: var(--kertas);
+  color: var(--tinta);
+  background-image: radial-gradient(#EAD7B0 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Stiker Shadow & Button Click Effects */
+.shadow-stiker {
+  box-shadow: 4px 4px 0px #8B5A2B;
+}
+
+.shadow-stiker-sm {
+  box-shadow: 2px 2px 0px #8B5A2B;
+}
+
+.shadow-stiker-lg {
+  box-shadow: 6px 6px 0px #8B5A2B;
+}
+
+.shadow-stiker-emas {
+  box-shadow: 4px 4px 0px #9A6B12;
+}
+
+.btn-pressable {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-pressable:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #8B5A2B;
+}
+
+.btn-pressable:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #8B5A2B;
+}
+
+/* Washi Tape Strip */
+.washi-tape {
+  position: relative;
+  background: rgba(234, 215, 176, 0.85);
+  box-shadow: 0 1px 3px rgba(58, 36, 18, 0.15);
+  backdrop-filter: blur(1px);
+}
+
+.washi-tape::before,
+.washi-tape::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background-size: 6px 6px;
+}
+
+.washi-tape::before {
+  left: -4px;
+  background: radial-gradient(circle, transparent 2px, rgba(234, 215, 176, 0.85) 2px);
+}
+
+.washi-tape::after {
+  right: -4px;
+  background: radial-gradient(circle, transparent 2px, rgba(234, 215, 176, 0.85) 2px);
+}
+
+/* Receipt Zigzag Bottom Border */
+.receipt-zigzag {
+  background: #FFFDF7;
+  position: relative;
+}
+
+.receipt-zigzag::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 10px;
+  background: radial-gradient(circle, transparent, transparent 50%, #FFFDF7 50%, #FFFDF7 100%);
+  background-size: 14px 14px;
+}
+
+/* Perforation Ticket Notches */
+.ticket-notch {
+  position: relative;
+}
+
+.ticket-notch::before,
+.ticket-notch::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: var(--kertas);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  box-shadow: inset 0 0 0 2px #8B5A2B;
+}
+
+.ticket-notch::before {
+  left: -11px;
+}
+
+.ticket-notch::after {
+  right: -11px;
+}
+
+/* Stamp Border for Heritage Cards */
+.stamp-border {
+  border: 4px dashed #C8922A;
+  border-radius: 12px;
+  background-color: #FFFDF7;
+}
+
+/* 3D Flip Card */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Keyframe Animations */
+@keyframes stampDrop {
+  0% {
+    transform: scale(2.2) rotate(-15deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.95) rotate(-6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-8deg);
+    opacity: 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.animate-stamp-drop {
+  animation: stampDrop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1deg);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 3s ease-in-out infinite;
+}
+
+@keyframes pulseDanger {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-danger {
+  animation: pulseDanger 0.8s ease-in-out infinite;
+}
+
+@keyframes flyScore {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-15px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+}
+
+.animate-fly-score {
+  animation: flyScore 1s ease-out forwards;
 }
