@@ -123,15 +123,32 @@ export const QuizQuestion: React.FC<QuizQuestionProps> = ({
       </div>
 
       {/* Quizizz Center Question Card */}
-      <div className="my-auto w-full py-2">
-        <div className="w-full bg-kertas-putih rounded-3xl border-3 border-tinta shadow-stiker p-5 sm:p-6 text-center relative">
+      <div className="my-auto w-full py-1 sm:py-2">
+        <div className="w-full bg-kertas-putih rounded-3xl border-3 border-tinta shadow-stiker p-3.5 sm:p-5 text-center relative flex flex-col items-center">
+          {/* Authentic Site Photo with Paper-Torn Edges */}
+          {site.image && (
+            <div className="w-full max-h-28 sm:max-h-36 mb-2.5 flex items-center justify-center overflow-hidden rounded-2xl bg-kraft/20 border-2 border-tinta/20 shadow-xs relative">
+              <img
+                src={site.image}
+                alt={site.name}
+                className="max-h-28 sm:max-h-36 w-auto object-contain drop-shadow-sm select-none"
+              />
+              <span
+                className="absolute bottom-1.5 right-2 px-2 py-0.5 rounded-md font-label text-[9px] font-bold text-white shadow-xs"
+                style={{ backgroundColor: site.color }}
+              >
+                {lang === "id" ? site.name : site.nameEn}
+              </span>
+            </div>
+          )}
+
           {/* Question Text */}
-          <h2 className="font-display font-extrabold text-lg sm:text-xl md:text-2xl text-tinta leading-snug">
+          <h2 className="font-display font-extrabold text-base sm:text-lg md:text-xl text-tinta leading-snug">
             {lang === "id" ? question.textId : question.textEn}
           </h2>
 
           {/* Time Countdown Badge */}
-          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-kraft/50 border border-tinta/30 font-label font-bold text-xs text-coklat">
+          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-kraft/50 border border-tinta/30 font-label font-bold text-xs text-coklat">
             <Clock className="w-3 h-3 text-coklat" />
             <span>
               {remainingTime} {lang === "id" ? "detik tersisa" : "seconds left"}

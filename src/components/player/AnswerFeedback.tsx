@@ -135,10 +135,10 @@ export const AnswerFeedback: React.FC<AnswerFeedbackProps> = ({
         >
           <span>
             {lang === "id"
-              ? `Lanjut (${secondsLeft}s) ➔`
-              : `Next (${secondsLeft}s) ➔`}
+              ? `Lanjut (${secondsLeft}s)`
+              : `Next (${secondsLeft}s)`}
           </span>
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-5 h-5 flex-shrink-0" />
         </StickerButton>
       </div>
     </div>

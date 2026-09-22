@@ -67,7 +67,7 @@ export const SiteHeritageCard: React.FC<SiteHeritageCardProps> = ({
   return (
     <div
       onClick={() => setIsFlipped(!isFlipped)}
-      className={`relative w-full max-w-sm h-72 cursor-pointer perspective-1000 select-none ${className}`}
+      className={`relative w-full max-w-sm h-80 cursor-pointer perspective-1000 select-none ${className}`}
       title={lang === "id" ? "Ketuk untuk membalik kartu" : "Tap to flip postcard"}
     >
       <div
@@ -76,7 +76,7 @@ export const SiteHeritageCard: React.FC<SiteHeritageCardProps> = ({
         }`}
       >
         {/* FRONT: Postcard View */}
-        <div className="absolute inset-0 backface-hidden bg-kertas-putih rounded-3xl border-3 border-tinta shadow-stiker p-5 flex flex-col justify-between overflow-hidden">
+        <div className="absolute inset-0 backface-hidden bg-kertas-putih rounded-3xl border-3 border-tinta shadow-stiker p-4 sm:p-5 flex flex-col justify-between overflow-hidden">
           {/* Postcard Header: Postage Stamp */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
@@ -90,8 +90,8 @@ export const SiteHeritageCard: React.FC<SiteHeritageCardProps> = ({
             </div>
 
             {/* Vintage Stamp Graphic */}
-            <div className="w-14 h-16 rounded-md border-2 border-dashed border-emas bg-kuning/30 p-1 flex flex-col items-center justify-between shadow-xs -rotate-3">
-              <Award className="w-5 h-5 text-emas" />
+            <div className="w-12 h-14 rounded-md border-2 border-dashed border-emas bg-kuning/30 p-1 flex flex-col items-center justify-between shadow-xs -rotate-3">
+              <Award className="w-4 h-4 text-emas" />
               <span className="font-label text-[8px] font-bold text-tinta">
                 RI-1832
               </span>
@@ -99,18 +99,27 @@ export const SiteHeritageCard: React.FC<SiteHeritageCardProps> = ({
             </div>
           </div>
 
-          {/* Site Illustration Placeholder / Title */}
-          <div className="my-auto text-center py-2">
+          {/* Site Illustration Photo / Title */}
+          <div className="my-auto text-center py-1 flex flex-col items-center">
+            {site.image && (
+              <div className="w-full h-24 sm:h-28 rounded-xl overflow-hidden border border-tinta/30 bg-kertas/40 mb-1.5 relative shadow-xs flex items-center justify-center">
+                <img
+                  src={site.image}
+                  alt={site.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
             <div
-              className="inline-block px-3 py-1 rounded-full text-xs font-label font-bold text-white mb-2 shadow-xs"
+              className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-label font-bold text-white mb-1 shadow-xs"
               style={{ backgroundColor: site.color }}
             >
               SITUS CAGAR BUDAYA #{site.id}
             </div>
-            <h3 className="font-display font-black text-xl text-tinta leading-tight">
+            <h3 className="font-display font-black text-base sm:text-lg text-tinta leading-tight">
               {lang === "id" ? site.name : site.nameEn}
             </h3>
-            <p className="font-body text-xs text-coklat font-semibold mt-1 max-w-[260px] mx-auto line-clamp-2">
+            <p className="font-body text-[11px] text-coklat font-semibold mt-0.5 max-w-[260px] mx-auto line-clamp-1 sm:line-clamp-2">
               {site.desc}
             </p>
           </div>

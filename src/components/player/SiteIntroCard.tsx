@@ -139,13 +139,24 @@ export const SiteIntroCard: React.FC<SiteIntroCardProps> = ({
             >
               Stage {stageId}/5
             </span>
-            <h2 className="font-display font-black text-2xl text-tinta leading-tight">
+            <h2 className="font-display font-black text-xl sm:text-2xl text-tinta leading-tight">
               {lang === "id" ? info.titleId : info.titleEn}
             </h2>
           </div>
 
+          {/* Authentic Site Photo with Paper-Torn Effect */}
+          {site.image && (
+            <div className="w-full h-32 sm:h-40 rounded-2xl overflow-hidden border-2 border-tinta bg-kertas/40 mb-3.5 relative shadow-xs flex items-center justify-center">
+              <img
+                src={site.image}
+                alt={site.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
           {/* Narrative Paragraph */}
-          <p className="font-body text-sm text-tinta font-medium leading-relaxed mb-4 bg-kertas/60 p-3 rounded-xl border border-tinta/20">
+          <p className="font-body text-xs sm:text-sm text-tinta font-medium leading-relaxed mb-3.5 bg-kertas/60 p-3 rounded-xl border border-tinta/20">
             {lang === "id" ? info.briefId : info.briefEn}
           </p>
 
@@ -189,7 +200,7 @@ export const SiteIntroCard: React.FC<SiteIntroCardProps> = ({
           onClick={onStartQuiz}
         >
           <span>{lang === "id" ? "Mulai Jawab Soal" : "Start Answering"}</span>
-          <FastForward className="w-5 h-5" />
+          <FastForward className="w-5 h-5 flex-shrink-0" />
         </StickerButton>
       </div>
     </div>

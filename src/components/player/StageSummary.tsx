@@ -90,10 +90,10 @@ export const StageSummary: React.FC<StageSummaryProps> = ({
                 ? "Lihat Podium Juara! 🏆"
                 : "View Final Podium! 🏆"
               : lang === "id"
-              ? "Lanjut ke Stage Berikutnya ➔"
-              : "Next Heritage Site ➔"}
+              ? "Lanjut ke Stage Berikutnya"
+              : "Next Heritage Site"}
           </span>
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-5 h-5 flex-shrink-0" />
         </StickerButton>
       </div>
     </div>

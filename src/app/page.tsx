@@ -320,8 +320,12 @@ export default function App() {
             onClick={() => setCurrentStep("pilih-bahasa")}
             className="flex items-center gap-2 text-left focus:outline-none group"
           >
-            <div className="w-8 h-8 rounded-xl bg-kuning border-2 border-tinta flex items-center justify-center shadow-stiker-sm group-hover:bg-[#FFD147] transition-all">
-              <Compass className="w-4 h-4 text-tinta" />
+            <div className="w-8 h-8 rounded-xl overflow-hidden border-2 border-tinta shadow-stiker-sm bg-[#B44C33] flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-all">
+              <img
+                src="/logo.webp"
+                alt="Logo Jejak Inderasakti"
+                className="w-full h-full object-cover select-none"
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-display font-black text-sm text-tinta leading-none">

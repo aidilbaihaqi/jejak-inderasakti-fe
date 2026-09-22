@@ -50,10 +50,17 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🇮🇩</span>
+              {/* Indonesia SVG Flag */}
+              <div className="w-8 h-6 rounded-lg overflow-hidden border-2 border-tinta shadow-stiker-sm flex flex-col flex-shrink-0">
+                <div className="w-full h-1/2 bg-[#E70011]" />
+                <div className="w-full h-1/2 bg-white" />
+              </div>
               <div className="text-left">
-                <div className="font-display font-black text-lg text-tinta leading-tight">
-                  Bahasa Indonesia
+                <div className="font-display font-black text-lg text-tinta leading-tight flex items-center gap-1.5">
+                  <span>Bahasa Indonesia</span>
+                  <span className="font-label text-[10px] px-1.5 py-0.5 rounded bg-kraft/80 border border-tinta/40 font-bold text-tinta">
+                    ID
+                  </span>
                 </div>
                 <div className="font-body text-xs text-coklat font-semibold">
                   Jelajah dalam bahasa nasional
@@ -76,10 +83,21 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
             }`}
           >
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🇬🇧</span>
+              {/* UK SVG Flag */}
+              <div className="w-8 h-6 rounded-lg overflow-hidden border-2 border-tinta shadow-stiker-sm flex-shrink-0 relative bg-[#012169]">
+                <svg viewBox="0 0 60 36" className="w-full h-full block" preserveAspectRatio="none">
+                  <path d="M0,0 L60,36 M60,0 L0,36" stroke="#ffffff" strokeWidth="6" />
+                  <path d="M0,0 L60,36 M60,0 L0,36" stroke="#C8102E" strokeWidth="2.5" />
+                  <path d="M30,0 v36 M0,18 h60" stroke="#ffffff" strokeWidth="10" />
+                  <path d="M30,0 v36 M0,18 h60" stroke="#C8102E" strokeWidth="6" />
+                </svg>
+              </div>
               <div className="text-left">
-                <div className="font-display font-black text-lg text-tinta leading-tight">
-                  English
+                <div className="font-display font-black text-lg text-tinta leading-tight flex items-center gap-1.5">
+                  <span>English</span>
+                  <span className="font-label text-[10px] px-1.5 py-0.5 rounded bg-kraft/80 border border-tinta/40 font-bold text-tinta">
+                    EN
+                  </span>
                 </div>
                 <div className="font-body text-xs text-coklat font-semibold">
                   Explore in international English

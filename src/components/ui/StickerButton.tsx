@@ -18,7 +18,7 @@ export const StickerButton: React.FC<StickerButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "inline-flex items-center justify-center font-display font-bold text-center select-none rounded-2xl border-3 border-tinta transition-all duration-150 btn-pressable active:scale-[0.98]";
+    "inline-flex items-center justify-center gap-2 font-display font-bold text-center select-none rounded-2xl border-3 border-tinta transition-all duration-150 btn-pressable active:scale-[0.98]";
 
   const variantStyles = {
     primary: "bg-kuning text-tinta shadow-stiker hover:bg-[#FFD147]",
@@ -45,8 +45,8 @@ export const StickerButton: React.FC<StickerButtonProps> = ({
       className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${className}`}
       {...props}
     >
-      {icon && <span className="mr-2 flex-shrink-0">{icon}</span>}
-      <span>{children}</span>
+      {icon && <span className="flex-shrink-0 flex items-center">{icon}</span>}
+      {children}
     </button>
   );
 };
