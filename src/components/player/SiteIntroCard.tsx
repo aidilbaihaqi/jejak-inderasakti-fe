@@ -107,46 +107,46 @@ export const SiteIntroCard: React.FC<SiteIntroCardProps> = ({
   }, [countdown, onStartQuiz]);
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[100dvh] p-4 sm:p-5 pb-safe">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between h-full max-h-full p-2.5 sm:p-3 min-h-0 overflow-hidden pb-safe">
       {/* Top Banner with Countdown */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-emas" />
+          <BookOpen className="w-4 h-4 text-emas" />
           <span className="font-label text-xs font-bold text-coklat tracking-wide uppercase">
             {lang === "id" ? "SEKILAS SEJARAH" : "HERITAGE BRIEF"}
           </span>
         </div>
 
-        <div className="px-3 py-1 bg-kuning rounded-xl border-2 border-tinta font-label font-bold text-xs text-tinta shadow-stiker-sm">
+        <div className="px-2.5 py-0.5 bg-kuning rounded-xl border-2 border-tinta font-label font-bold text-xs text-tinta shadow-stiker-sm">
           {countdown}s
         </div>
       </div>
 
       {/* Main Historical Intro Card */}
-      <div className="my-auto w-full space-y-4">
+      <div className="my-auto w-full space-y-2">
         <PaperCard
           variant="memo"
           washiTape
           washiTapeColor={site.color}
           washiTapeText={`SITUS #${stageId} DARI 5`}
-          className="p-6"
+          className="p-3 sm:p-4"
         >
           {/* Site Title */}
-          <div className="mb-3 text-center">
+          <div className="mb-2 text-center">
             <span
-              className="inline-block px-3 py-0.5 rounded-full font-label text-[11px] font-bold text-white mb-1.5 shadow-xs"
+              className="inline-block px-2.5 py-0.5 rounded-full font-label text-[10px] font-bold text-white mb-1 shadow-xs"
               style={{ backgroundColor: site.color }}
             >
               Stage {stageId}/5
             </span>
-            <h2 className="font-display font-black text-xl sm:text-2xl text-tinta leading-tight">
+            <h2 className="font-display font-black text-lg sm:text-xl text-tinta leading-tight">
               {lang === "id" ? info.titleId : info.titleEn}
             </h2>
           </div>
 
           {/* Authentic Site Photo with Paper-Torn Effect */}
           {site.image && (
-            <div className="w-full h-32 sm:h-40 rounded-2xl overflow-hidden border-2 border-tinta bg-kertas/40 mb-3.5 relative shadow-xs flex items-center justify-center">
+            <div className="w-full h-24 sm:h-28 rounded-xl overflow-hidden border-2 border-tinta bg-kertas/40 mb-2 relative shadow-xs flex items-center justify-center">
               <img
                 src={site.image}
                 alt={site.name}
@@ -156,7 +156,7 @@ export const SiteIntroCard: React.FC<SiteIntroCardProps> = ({
           )}
 
           {/* Narrative Paragraph */}
-          <p className="font-body text-xs sm:text-sm text-tinta font-medium leading-relaxed mb-3.5 bg-kertas/60 p-3 rounded-xl border border-tinta/20">
+          <p className="font-body text-xs text-tinta font-medium leading-relaxed mb-2 bg-kertas/60 p-2 rounded-xl border border-tinta/20">
             {lang === "id" ? info.briefId : info.briefEn}
           </p>
 
@@ -178,10 +178,10 @@ export const SiteIntroCard: React.FC<SiteIntroCardProps> = ({
         </PaperCard>
 
         {/* Mascot Sakti Pointing Hint */}
-        <div className="flex justify-center">
+        <div className="flex justify-center -my-1">
           <MascotSakti
             pose="pointing"
-            size={110}
+            size={70}
             speechBubble={
               lang === "id"
                 ? "Simak baik-baik, soal kuis ada di sini lho!"
@@ -192,15 +192,15 @@ export const SiteIntroCard: React.FC<SiteIntroCardProps> = ({
       </div>
 
       {/* Start Button / Skip Countdown */}
-      <div className="w-full pt-4">
+      <div className="w-full pt-1.5">
         <StickerButton
           variant="primary"
-          size="lg"
-          className="w-full text-xl flex items-center justify-center gap-2"
+          size="md"
+          className="w-full text-lg py-2.5 flex items-center justify-center gap-2"
           onClick={onStartQuiz}
         >
           <span>{lang === "id" ? "Mulai Jawab Soal" : "Start Answering"}</span>
-          <FastForward className="w-5 h-5 flex-shrink-0" />
+          <FastForward className="w-4 h-4 flex-shrink-0" />
         </StickerButton>
       </div>
     </div>

@@ -6,6 +6,8 @@ import { LogoInderasakti } from "../assets/LogoInderasakti";
 import { AvatarIcon } from "../assets/AvatarCollection";
 import { Trophy, Download, PlusCircle, ArrowLeft } from "lucide-react";
 
+import { getRoomResultsCsv } from "@/lib/api";
+
 interface FinalResult {
   rank: number;
   name: string;
@@ -20,26 +22,19 @@ interface FinalResult {
 interface HostPodiumExportProps {
   roomCode: string;
   roomName: string;
+  roomId?: string;
+  hostToken?: string | null;
   results?: FinalResult[];
   onNewSession: () => void;
   onBackToRooms?: () => void;
 }
 
-const DEFAULT_RESULTS: FinalResult[] = [
-  { rank: 1, name: "Bimo", school: "SDN 001 Tanjungpinang", avatarId: "1", score: 12500, correctAnswers: 14, totalQuestions: 15, timeTaken: "4m 12s" },
-  { rank: 2, name: "Rani", school: "SMPN 1 Tanjungpinang", avatarId: "4", score: 11200, correctAnswers: 13, totalQuestions: 15, timeTaken: "4m 35s" },
-  { rank: 3, name: "Ahmad", school: "SMPN 1 Tanjungpinang", avatarId: "7", score: 10800, correctAnswers: 12, totalQuestions: 15, timeTaken: "5m 01s" },
-  { rank: 4, name: "Siti", school: "SDN 001 Tanjungpinang", avatarId: "2", score: 9800, correctAnswers: 11, totalQuestions: 15, timeTaken: "5m 20s" },
-  { rank: 5, name: "Farhan", school: "SDN 002 Tanjungpinang", avatarId: "5", score: 8600, correctAnswers: 10, totalQuestions: 15, timeTaken: "5m 45s" },
-  { rank: 6, name: "Aisyah", school: "SMPN 2 Tanjungpinang", avatarId: "6", score: 7900, correctAnswers: 9, totalQuestions: 15, timeTaken: "6m 10s" },
-  { rank: 7, name: "Rizky", school: "SMPN 1 Tanjungpinang", avatarId: "3", score: 7200, correctAnswers: 8, totalQuestions: 15, timeTaken: "6m 30s" },
-  { rank: 8, name: "Maya", school: "SDN 001 Tanjungpinang", avatarId: "8", score: 6500, correctAnswers: 7, totalQuestions: 15, timeTaken: "6m 50s" },
-];
-
 export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
-  roomCode = "482913",
-  roomName = "Kelas 8-B — Sejarah Riau",
-  results = DEFAULT_RESULTS,
+  roomCode = "------",
+  roomName = "Sesi Kuis",
+  roomId,
+  hostToken,
+  results = [],
   onNewSession,
   onBackToRooms,
 }) => {
@@ -53,7 +48,25 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
     });
   }, []);
 
-  const handleDownloadCsv = () => {
+  const handleDownloadCsv = async () => {
+    if (hostToken && roomId && hostToken !== "demo-mock-jwt-token") {
+      try {
+        const csvText = await getRoomResultsCsv(hostToken, roomId);
+        const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `rekap_nilai_jejak_inderasakti_${roomCode}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        return;
+      } catch (err) {
+        console.warn("Failed to download CSV from API, falling back to local generator:", err);
+      }
+    }
+
     const headers = ["Peringkat", "Nama Siswa", "Asal Sekolah", "Skor Akhir", "Benar", "Total Soal", "Durasi"];
     const rows = results.map((r) => [
       r.rank,
@@ -86,7 +99,7 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
   const p3 = results[2];
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col justify-between min-h-[700px] p-5 sm:p-7">
+    <div className="w-full max-w-6xl mx-auto flex flex-col justify-between h-full max-h-full min-h-0 overflow-y-auto p-4 sm:p-6">
       {/* Top Navbar */}
       <div className="flex items-center justify-between pb-4 border-b-3 border-tinta mb-5">
         <LogoInderasakti variant="horizontal" />
@@ -137,61 +150,77 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
             </h3>
 
             {/* Podium Display */}
-            <div className="w-full flex items-end justify-center gap-2 px-2 my-auto pt-6">
-              {/* Rank 2 (Silver) */}
-              {p2 && (
-                <div className="flex-1 flex flex-col items-center">
-                  <AvatarIcon id={p2.avatarId} size={48} />
-                  <span className="font-display font-black text-xs text-tinta mt-1 truncate max-w-[80px]">
-                    {p2.name}
-                  </span>
-                  <span className="font-label text-[10px] text-coklat font-bold">
-                    {p2.score.toLocaleString()}
-                  </span>
-                  <div className="w-full h-24 bg-[#E0E0E0] border-2 border-tinta rounded-t-xl flex flex-col items-center justify-center shadow-stiker-sm mt-1">
-                    <span className="font-display font-black text-2xl text-coklat">2</span>
-                    <span className="font-label text-[8px] font-bold text-tinta">PERAK</span>
+            {results.length === 0 ? (
+              <div className="my-auto py-10 flex flex-col items-center justify-center text-center">
+                <Trophy className="w-12 h-12 text-emas/40 mb-2 stroke-[1.5]" />
+                <h4 className="font-display font-black text-base text-tinta">
+                  Belum Ada Data Juara
+                </h4>
+                <p className="font-body text-xs text-coklat font-semibold mt-1 max-w-xs">
+                  Nilai juara dan podium akan tampil otomatis setelah peserta menyelesaikan kuis.
+                </p>
+              </div>
+            ) : (
+              <div className="w-full flex items-end justify-center gap-2 px-2 my-auto pt-6">
+                {/* Rank 2 (Silver) */}
+                {p2 ? (
+                  <div className="flex-1 flex flex-col items-center">
+                    <AvatarIcon id={p2.avatarId} size={48} />
+                    <span className="font-display font-black text-xs text-tinta mt-1 truncate max-w-[80px]">
+                      {p2.name}
+                    </span>
+                    <span className="font-label text-[10px] text-coklat font-bold">
+                      {p2.score.toLocaleString()}
+                    </span>
+                    <div className="w-full h-24 bg-[#E0E0E0] border-2 border-tinta rounded-t-xl flex flex-col items-center justify-center shadow-stiker-sm mt-1">
+                      <span className="font-display font-black text-2xl text-coklat">2</span>
+                      <span className="font-label text-[8px] font-bold text-tinta">PERAK</span>
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex-1" />
+                )}
 
-              {/* Rank 1 (Gold - Tallest) */}
-              {p1 && (
-                <div className="flex-1 flex flex-col items-center -mt-6">
-                  <div className="relative">
-                    <AvatarIcon id={p1.avatarId} size={58} selected />
-                    <Trophy className="w-5 h-5 text-emas fill-kuning absolute -top-3 -right-2" />
+                {/* Rank 1 (Gold - Tallest) */}
+                {p1 && (
+                  <div className="flex-1 flex flex-col items-center -mt-6">
+                    <div className="relative">
+                      <AvatarIcon id={p1.avatarId} size={58} selected />
+                      <Trophy className="w-5 h-5 text-emas fill-kuning absolute -top-3 -right-2" />
+                    </div>
+                    <span className="font-display font-black text-sm text-tinta mt-1 truncate max-w-[90px]">
+                      {p1.name}
+                    </span>
+                    <span className="font-label text-[11px] text-tinta font-extrabold">
+                      {p1.score.toLocaleString()}
+                    </span>
+                    <div className="w-full h-32 bg-kuning border-3 border-tinta rounded-t-2xl flex flex-col items-center justify-center shadow-stiker mt-1">
+                      <span className="font-display font-black text-4xl text-tinta">1</span>
+                      <span className="font-label text-[9px] font-black text-tinta">EMAS</span>
+                    </div>
                   </div>
-                  <span className="font-display font-black text-sm text-tinta mt-1 truncate max-w-[90px]">
-                    {p1.name}
-                  </span>
-                  <span className="font-label text-[11px] text-tinta font-extrabold">
-                    {p1.score.toLocaleString()}
-                  </span>
-                  <div className="w-full h-32 bg-kuning border-3 border-tinta rounded-t-2xl flex flex-col items-center justify-center shadow-stiker mt-1">
-                    <span className="font-display font-black text-4xl text-tinta">1</span>
-                    <span className="font-label text-[9px] font-black text-tinta">EMAS</span>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Rank 3 (Bronze) */}
-              {p3 && (
-                <div className="flex-1 flex flex-col items-center">
-                  <AvatarIcon id={p3.avatarId} size={48} />
-                  <span className="font-display font-black text-xs text-tinta mt-1 truncate max-w-[80px]">
-                    {p3.name}
-                  </span>
-                  <span className="font-label text-[10px] text-coklat font-bold">
-                    {p3.score.toLocaleString()}
-                  </span>
-                  <div className="w-full h-20 bg-[#D4A373] border-2 border-tinta rounded-t-xl flex flex-col items-center justify-center shadow-stiker-sm mt-1">
-                    <span className="font-display font-black text-2xl text-white">3</span>
-                    <span className="font-label text-[8px] font-bold text-white">PERUNGGU</span>
+                {/* Rank 3 (Bronze) */}
+                {p3 ? (
+                  <div className="flex-1 flex flex-col items-center">
+                    <AvatarIcon id={p3.avatarId} size={48} />
+                    <span className="font-display font-black text-xs text-tinta mt-1 truncate max-w-[80px]">
+                      {p3.name}
+                    </span>
+                    <span className="font-label text-[10px] text-coklat font-bold">
+                      {p3.score.toLocaleString()}
+                    </span>
+                    <div className="w-full h-20 bg-[#D4A373] border-2 border-tinta rounded-t-xl flex flex-col items-center justify-center shadow-stiker-sm mt-1">
+                      <span className="font-display font-black text-2xl text-white">3</span>
+                      <span className="font-label text-[8px] font-bold text-white">PERUNGGU</span>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="flex-1" />
+                )}
+              </div>
+            )}
 
             <div className="w-full pt-3 border-t border-dashed border-kraft text-xs font-body font-bold text-coklat">
               Selamat kepada para juara penjelajah cilik Pulau Penyengat!
@@ -212,7 +241,17 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto flex-1 max-h-[380px]">
+            {results.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
+                <span className="font-display font-black text-sm text-tinta">
+                  Belum Ada Data Rekapitulasi
+                </span>
+                <span className="font-body text-xs text-coklat font-semibold mt-1">
+                  Hasil pengerjaan kuis siswa akan muncul otomatis di sini.
+                </span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto flex-1 max-h-[380px]">
               <table className="w-full text-left font-body text-xs">
                 <thead>
                   <tr className="border-b-2 border-tinta/30 font-display font-extrabold text-coklat uppercase text-[10px]">
@@ -256,6 +295,7 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
                 </tbody>
               </table>
             </div>
+            )}
 
             {/* Footer CSV button note */}
             <div className="mt-4 pt-3 border-t border-dashed border-kraft flex items-center justify-between">

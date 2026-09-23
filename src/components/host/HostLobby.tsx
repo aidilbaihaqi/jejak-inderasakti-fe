@@ -24,20 +24,11 @@ interface HostLobbyProps {
 }
 
 
-const DEFAULT_HOST_PLAYERS: JoinedHostPlayer[] = [
-  { id: "1", name: "Bimo", school: "SDN 001 Tanjungpinang", avatarId: "1" },
-  { id: "2", name: "Siti", school: "SDN 001 Tanjungpinang", avatarId: "2" },
-  { id: "3", name: "Rizky", school: "SMPN 1 Tanjungpinang", avatarId: "3" },
-  { id: "4", name: "Rani", school: "SMPN 1 Tanjungpinang", avatarId: "4" },
-  { id: "5", name: "Farhan", school: "SDN 002 Tanjungpinang", avatarId: "5" },
-  { id: "6", name: "Aisyah", school: "SMPN 2 Tanjungpinang", avatarId: "6" },
-  { id: "7", name: "Ahmad", school: "SMPN 1 Tanjungpinang", avatarId: "7" },
-  { id: "8", name: "Maya", school: "SDN 001 Tanjungpinang", avatarId: "8" },
-];
+const DEFAULT_HOST_PLAYERS: JoinedHostPlayer[] = [];
 
 export const HostLobby: React.FC<HostLobbyProps> = ({
-  roomCode = "482913",
-  roomName = "Kelas 8-B — Sejarah Riau",
+  roomCode = "------",
+  roomName = "Sesi Kuis Budaya",
   gradeLevel = "SMP",
   sessionMode = "NORMAL",
   players = DEFAULT_HOST_PLAYERS,
@@ -46,7 +37,7 @@ export const HostLobby: React.FC<HostLobbyProps> = ({
   onBackToRooms,
 }) => {
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col justify-between min-h-[700px] p-5 sm:p-7">
+    <div className="w-full max-w-6xl mx-auto flex flex-col justify-between h-full max-h-full min-h-0 overflow-y-auto p-4 sm:p-6">
       {/* Top Projector Navbar */}
       <div className="flex items-center justify-between pb-4 border-b-3 border-tinta mb-6">
         <LogoInderasakti variant="horizontal" />
@@ -128,22 +119,34 @@ export const HostLobby: React.FC<HostLobbyProps> = ({
             </div>
 
             {/* Grid of Players */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 overflow-y-auto max-h-[380px] pr-1 flex-1">
-              {players.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex flex-col items-center text-center p-3 rounded-2xl bg-kertas border-2 border-tinta shadow-stiker-sm animate-pop-badge"
-                >
-                  <AvatarIcon id={p.avatarId} size={50} />
-                  <span className="font-display font-black text-sm text-tinta truncate max-w-[100px] mt-1.5">
-                    {p.name}
-                  </span>
-                  <span className="font-body text-[10px] text-coklat font-semibold truncate max-w-[100px]">
-                    {p.school}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {players.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-kertas/40 rounded-2xl border-2 border-dashed border-tinta/30 my-4">
+                <Users className="w-12 h-12 text-coklat/40 mb-2 animate-pulse" />
+                <h4 className="font-display font-black text-base text-tinta">
+                  Menunggu Peserta Bergabung...
+                </h4>
+                <p className="font-body text-xs text-coklat font-semibold mt-1">
+                  Minta peserta membuka aplikasi di HP dan memasukkan kode PIN di samping.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 overflow-y-auto max-h-[380px] pr-1 flex-1">
+                {players.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex flex-col items-center text-center p-3 rounded-2xl bg-kertas border-2 border-tinta shadow-stiker-sm animate-pop-badge"
+                  >
+                    <AvatarIcon id={p.avatarId} size={50} />
+                    <span className="font-display font-black text-sm text-tinta truncate max-w-[100px] mt-1.5">
+                      {p.name}
+                    </span>
+                    <span className="font-body text-[10px] text-coklat font-semibold truncate max-w-[100px]">
+                      {p.school}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Status note */}
             <div className="mt-4 pt-3 border-t border-dashed border-kraft flex items-center justify-between text-xs font-label font-bold text-coklat">

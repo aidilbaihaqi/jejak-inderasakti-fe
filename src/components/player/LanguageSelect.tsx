@@ -17,17 +17,17 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
   onNext,
 }) => {
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-between min-h-[100dvh] p-4 sm:p-5 pb-safe">
+    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-between h-full max-h-full p-2.5 sm:p-4 min-h-0 overflow-hidden pb-safe">
       {/* Top Logo */}
-      <div className="w-full flex justify-center pt-1">
+      <div className="w-full flex justify-center pt-0.5">
         <LogoInderasakti variant="full" />
       </div>
 
       {/* Mascot Sakti Waving */}
-      <div className="my-auto py-2 flex flex-col items-center">
+      <div className="my-auto py-1 flex flex-col items-center">
         <MascotSakti
           pose="waving"
-          size={130}
+          size={95}
           speechBubble={
             selectedLang === "id"
               ? "Hai penjelajah! Pilih bahasamu yuk!"
@@ -37,13 +37,13 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
       </div>
 
       {/* Language Selection Card */}
-      <PaperCard variant="memo" washiTape washiTapeText="PILIH BAHASA / SELECT LANGUAGE" className="w-full p-4 sm:p-5 mt-1">
-        <div className="flex flex-col gap-2.5 sm:gap-3">
+      <PaperCard variant="memo" washiTape washiTapeText="PILIH BAHASA / SELECT LANGUAGE" className="w-full p-3 sm:p-4 mt-1">
+        <div className="flex flex-col gap-2 sm:gap-2.5">
           {/* Bahasa Indonesia Option */}
           <button
             type="button"
             onClick={() => onSelectLang("id")}
-            className={`w-full p-4 rounded-2xl border-3 border-tinta flex items-center justify-between transition-all btn-pressable ${
+            className={`w-full p-2.5 sm:p-3 rounded-2xl border-2 sm:border-3 border-tinta flex items-center justify-between transition-all btn-pressable ${
               selectedLang === "id"
                 ? "bg-kuning shadow-stiker ring-2 ring-tinta"
                 : "bg-kertas-putih hover:bg-kraft/40 shadow-stiker-sm"
@@ -76,7 +76,7 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
           <button
             type="button"
             onClick={() => onSelectLang("en")}
-            className={`w-full p-4 rounded-2xl border-3 border-tinta flex items-center justify-between transition-all btn-pressable ${
+            className={`w-full p-2.5 sm:p-3 rounded-2xl border-2 sm:border-3 border-tinta flex items-center justify-between transition-all btn-pressable ${
               selectedLang === "en"
                 ? "bg-kuning shadow-stiker ring-2 ring-tinta"
                 : "bg-kertas-putih hover:bg-kraft/40 shadow-stiker-sm"
@@ -111,11 +111,11 @@ export const LanguageSelect: React.FC<LanguageSelectProps> = ({
         </div>
 
         {/* Next Button */}
-        <div className="mt-5">
+        <div className="mt-3 sm:mt-4">
           <StickerButton
             variant="primary"
-            size="lg"
-            className="w-full text-xl"
+            size="md"
+            className="w-full text-lg sm:text-xl py-2.5 sm:py-3"
             onClick={onNext}
           >
             {selectedLang === "id" ? "Mulai Petualangan ➔" : "Start Adventure ➔"}

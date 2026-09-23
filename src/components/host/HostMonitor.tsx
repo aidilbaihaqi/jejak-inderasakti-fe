@@ -16,27 +16,28 @@ interface LivePlayerScore {
   accuracy: string; // e.g. "5/5"
 }
 
+export interface LiveRanking {
+  rank: number;
+  nickname: string;
+  school: string;
+  score: number;
+  correct_count: number;
+}
+
 interface HostMonitorProps {
   roomCode: string;
   roomName: string;
+  rankings?: LiveRanking[];
+  players?: { id: string; name: string; avatarId?: string; school?: string }[];
   onEndSession: () => void;
   onBackToRooms?: () => void;
 }
 
-const DEFAULT_MONITOR_PLAYERS: LivePlayerScore[] = [
-  { id: "1", name: "Bimo", avatarId: "1", score: 12500, stage: 5, question: 3, totalStages: 5, accuracy: "14/15" },
-  { id: "2", name: "Rani", avatarId: "4", score: 11200, stage: 4, question: 2, totalStages: 5, accuracy: "12/13" },
-  { id: "3", name: "Ahmad", avatarId: "7", score: 10800, stage: 4, question: 1, totalStages: 5, accuracy: "11/13" },
-  { id: "4", name: "Siti", avatarId: "2", score: 9800, stage: 3, question: 3, totalStages: 5, accuracy: "10/12" },
-  { id: "5", name: "Farhan", avatarId: "5", score: 8600, stage: 3, question: 2, totalStages: 5, accuracy: "9/11" },
-  { id: "6", name: "Aisyah", avatarId: "6", score: 7900, stage: 3, question: 1, totalStages: 5, accuracy: "8/10" },
-  { id: "7", name: "Rizky", avatarId: "3", score: 7200, stage: 2, question: 3, totalStages: 5, accuracy: "7/9" },
-  { id: "8", name: "Maya", avatarId: "8", score: 6500, stage: 2, question: 2, totalStages: 5, accuracy: "6/8" },
-];
-
 export const HostMonitor: React.FC<HostMonitorProps> = ({
-  roomCode = "482913",
-  roomName = "Kelas 8-B — Sejarah Riau",
+  roomCode = "------",
+  roomName = "Sesi Kuis",
+  rankings,
+  players = [],
   onEndSession,
   onBackToRooms,
 }) => {
@@ -53,7 +54,7 @@ export const HostMonitor: React.FC<HostMonitorProps> = ({
   const seconds = secondsRemaining % 60;
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col justify-between min-h-[700px] p-5 sm:p-7">
+    <div className="w-full max-w-6xl mx-auto flex flex-col justify-between h-full max-h-full min-h-0 overflow-y-auto p-4 sm:p-6">
       {/* Top Navbar */}
       <div className="flex items-center justify-between pb-4 border-b-3 border-tinta mb-5">
         <LogoInderasakti variant="horizontal" />
@@ -106,17 +107,16 @@ export const HostMonitor: React.FC<HostMonitorProps> = ({
                 </h3>
               </div>
               <span className="font-label text-xs text-coklat font-bold">
-                8 Peserta
+                {rankings && rankings.length > 0 ? `${rankings.length} Peserta` : "8 Peserta"}
               </span>
             </div>
 
             {/* Leaderboard List */}
             <div className="space-y-2 overflow-y-auto max-h-[380px] pr-1">
-              {DEFAULT_MONITOR_PLAYERS.map((player, idx) => {
-                const isTop3 = idx < 3;
-                return (
+              {rankings && rankings.length > 0 ? (
+                rankings.map((item, idx) => (
                   <div
-                    key={player.id}
+                    key={`rank-${item.rank}-${item.nickname}`}
                     className={`flex items-center justify-between p-2.5 rounded-xl border-2 transition-all ${
                       idx === 0
                         ? "bg-kuning/30 border-tinta shadow-stiker-sm"
@@ -137,30 +137,68 @@ export const HostMonitor: React.FC<HostMonitorProps> = ({
                             : "bg-kraft text-coklat"
                         }`}
                       >
-                        {idx + 1}
+                        {item.rank}
                       </span>
-                      <AvatarIcon id={player.avatarId} size={36} />
                       <div>
                         <span className="font-display font-black text-sm text-tinta block leading-tight">
-                          {player.name}
+                          {item.nickname}
                         </span>
                         <span className="font-label text-[10px] text-coklat font-bold">
-                          Akurasi: {player.accuracy}
+                          {item.school || "Umum"} • {item.correct_count} benar
                         </span>
                       </div>
                     </div>
 
                     <div className="text-right">
                       <span className="font-display font-black text-base text-tinta block">
-                        {player.score.toLocaleString()}
+                        {item.score.toLocaleString()}
                       </span>
                       <span className="font-label text-[10px] text-benar font-bold">
-                        Stage {player.stage}/5
+                        Peringkat {item.rank}
                       </span>
                     </div>
                   </div>
-                );
-              })}
+                ))
+              ) : players && players.length > 0 ? (
+                players.map((p, idx) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between p-2.5 rounded-xl border-2 bg-kertas-putih border-tinta/40"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 h-6 rounded-full border border-tinta font-label font-black text-xs flex items-center justify-center bg-kraft text-coklat">
+                        {idx + 1}
+                      </span>
+                      <AvatarIcon id={p.avatarId || "1"} size={36} />
+                      <div>
+                        <span className="font-display font-black text-sm text-tinta block leading-tight">
+                          {p.name}
+                        </span>
+                        <span className="font-label text-[10px] text-coklat font-bold">
+                          {p.school || "Umum"} • Sedang Mengerjakan
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-display font-black text-sm text-tinta block">
+                        0
+                      </span>
+                      <span className="font-label text-[10px] text-coklat font-bold">
+                        Aktif
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-12 text-center flex flex-col items-center justify-center">
+                  <span className="font-display font-black text-sm text-tinta">
+                    Belum Ada Peserta Menjawab
+                  </span>
+                  <span className="font-body text-xs text-coklat mt-1">
+                    Klasemen langsung akan terupdate begitu peserta mengirim jawaban.
+                  </span>
+                </div>
+              )}
             </div>
           </PaperCard>
         </div>
@@ -176,45 +214,49 @@ export const HostMonitor: React.FC<HostMonitorProps> = ({
                 </h3>
               </div>
               <span className="font-label text-xs text-benar font-bold">
-                Semua aktif
+                {players && players.length > 0 ? `${players.length} Peserta Aktif` : "0 Aktif"}
               </span>
             </div>
 
             {/* Student Progress Bars */}
             <div className="space-y-3 overflow-y-auto max-h-[380px] pr-1">
-              {DEFAULT_MONITOR_PLAYERS.map((player) => {
-                const totalEstimatedQuestions = 15;
-                const completedQuestions =
-                  (player.stage - 1) * 3 + player.question;
-                const pct = Math.min(
-                  100,
-                  Math.round((completedQuestions / totalEstimatedQuestions) * 100)
-                );
-
-                return (
+              {players && players.length > 0 ? (
+                players.map((player) => (
                   <div
                     key={player.id}
                     className="p-3 rounded-xl bg-kertas border-2 border-tinta/50 space-y-1.5"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-display font-bold text-sm text-tinta">
-                        {player.name}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <AvatarIcon id={player.avatarId || "1"} size={24} />
+                        <span className="font-display font-bold text-sm text-tinta">
+                          {player.name}
+                        </span>
+                      </div>
                       <span className="font-label text-xs font-bold text-coklat">
-                        Stage {player.stage} · Soal {player.question} ({pct}%)
+                        {player.school || "Umum"}
                       </span>
                     </div>
 
                     {/* Progress Bar */}
                     <div className="w-full h-3 bg-kraft/70 rounded-full border border-tinta/40 overflow-hidden">
                       <div
-                        className="h-full bg-kuning transition-all duration-300 rounded-full"
-                        style={{ width: `${pct}%` }}
+                        className="h-full bg-kuning transition-all duration-300 rounded-full animate-pulse"
+                        style={{ width: "65%" }}
                       />
                     </div>
                   </div>
-                );
-              })}
+                ))
+              ) : (
+                <div className="py-12 text-center flex flex-col items-center justify-center">
+                  <span className="font-display font-black text-sm text-tinta">
+                    Menunggu Peserta Aktif
+                  </span>
+                  <span className="font-body text-xs text-coklat mt-1">
+                    Progres pengerjaan peserta akan muncul di sini saat sesi dimulai.
+                  </span>
+                </div>
+              )}
             </div>
           </PaperCard>
         </div>

@@ -51,9 +51,8 @@ export const LogoInderasakti: React.FC<LogoProps> = ({
   // Full / Stacked Logo
   return (
     <div className={`flex flex-col items-center text-center ${className}`}>
-      {/* Emblem Badge with Washi Tape Effect */}
+      {/* Emblem Badge */}
       <div className="relative mb-2">
-        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-kraft border border-tinta opacity-90 rotate-[-3deg] z-10 shadow-xs" />
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl overflow-hidden border-3 border-tinta shadow-stiker bg-[#B44C33] flex items-center justify-center">
           <img
             src="/logo.webp"
@@ -70,7 +69,7 @@ export const LogoInderasakti: React.FC<LogoProps> = ({
 
       {/* Ribbon / Pill Subtitle */}
       <div className="mt-1 px-4 py-0.5 bg-kraft text-tinta font-label font-bold text-xs uppercase tracking-widest border border-tinta rounded-full shadow-stiker-sm">
-        Penyengat Quest ✦ Kuis Budaya
+        Penyengat Adventure ✦ Jelajah Budaya
       </div>
     </div>
   );

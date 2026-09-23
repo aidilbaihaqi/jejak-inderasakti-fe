@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { LogoInderasakti } from "../assets/LogoInderasakti";
 import { PaperCard } from "../ui/PaperCard";
 import { StickerButton } from "../ui/StickerButton";
-import { KeyRound, Mail, ShieldCheck, ArrowRight } from "lucide-react";
+import { KeyRound, Mail, ShieldCheck, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { hostLogin } from "@/lib/api";
 
 interface HostLoginProps {
-  onLoginSuccess: (hostEmail: string) => void;
+  onLoginSuccess: (hostEmail: string, token: string) => void;
   onBackToPlayer: () => void;
 }
 
@@ -13,36 +14,48 @@ export const HostLogin: React.FC<HostLoginProps> = ({
   onLoginSuccess,
   onBackToPlayer,
 }) => {
-  const [email, setEmail] = useState("guru.sejarah@penyengat.id");
-  const [password, setPassword] = useState("indrasakti2026");
+  const [email, setEmail] = useState("host0@email.com");
+  const [password, setPassword] = useState("host123456");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim() && password.trim()) {
-      onLoginSuccess(email);
+    if (!email.trim() || !password.trim()) return;
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const res = await hostLogin(email.trim(), password);
+      onLoginSuccess(email.trim(), res.token);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Gagal masuk. Periksa kembali email dan kata sandi.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[600px] p-5">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between h-full max-h-full p-3 sm:p-4 min-h-0 overflow-hidden">
       {/* Top Header */}
-      <div className="w-full text-center pt-2">
-        <LogoInderasakti variant="full" />
+      <div className="w-full flex justify-center pt-1">
+        <LogoInderasakti variant="horizontal" />
       </div>
 
       {/* Login Card */}
-      <div className="my-auto w-full py-4">
+      <div className="my-auto w-full py-1">
         <PaperCard
           variant="memo"
           washiTape
           washiTapeText="PORTAL GURU / HOST SESI"
-          className="p-6 sm:p-7"
+          className="p-4 sm:p-5"
         >
-          <div className="text-center mb-5">
-            <h2 className="font-display font-black text-2xl text-tinta">
+          <div className="text-center mb-3">
+            <h2 className="font-display font-black text-xl sm:text-2xl text-tinta">
               Masuk Akun Host
             </h2>
-            <p className="font-body text-xs text-coklat font-semibold mt-1">
+            <p className="font-body text-xs text-coklat font-semibold mt-0.5">
               Gunakan akun panitia / guru yang telah didaftarkan
             </p>
           </div>
@@ -78,6 +91,14 @@ export const HostLogin: React.FC<HostLoginProps> = ({
               />
             </div>
 
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="p-2.5 rounded-xl bg-salah/10 border-2 border-salah text-salah text-xs font-body font-bold flex items-center gap-1.5 animate-shake">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             {/* Security Badge */}
             <div className="flex items-center gap-2 p-2.5 rounded-xl bg-kraft/40 border border-tinta/30 text-[11px] font-body font-bold text-coklat">
               <ShieldCheck className="w-4 h-4 text-benar flex-shrink-0" />
@@ -90,9 +111,17 @@ export const HostLogin: React.FC<HostLoginProps> = ({
                 type="submit"
                 variant="primary"
                 size="lg"
+                disabled={isLoading}
                 className="w-full text-lg"
               >
-                Masuk Dashboard Host ➔
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Menghubungkan...</span>
+                  </>
+                ) : (
+                  <span>Masuk Dashboard Host ➔</span>
+                )}
               </StickerButton>
             </div>
           </form>
