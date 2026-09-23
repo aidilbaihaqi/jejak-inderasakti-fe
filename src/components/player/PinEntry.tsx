@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { PaperCard } from "../ui/PaperCard";
 import { PinInput } from "../ui/PinInput";
 import { StickerButton } from "../ui/StickerButton";
-import { ArrowLeft, QrCode, Ticket, Sparkles } from "lucide-react";
+import { ArrowLeft, QrCode, Ticket, Sparkles, Loader2 } from "lucide-react";
 
 interface PinEntryProps {
   pin: string;
@@ -11,7 +11,8 @@ interface PinEntryProps {
   onBack: () => void;
   lang: "id" | "en";
   onToggleLang?: () => void;
-  error?: string;
+  error?: string | null;
+  isChecking?: boolean;
 }
 
 export const PinEntry: React.FC<PinEntryProps> = ({
@@ -21,13 +22,14 @@ export const PinEntry: React.FC<PinEntryProps> = ({
   onBack,
   lang,
   error,
+  isChecking = false,
 }) => {
   const [showQrSim, setShowQrSim] = useState(false);
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[calc(100dvh-60px)] px-4 py-3 pb-safe">
-      {/* Back Navigation */}
-      <div className="flex items-center justify-between">
+    <div className="w-full max-w-md mx-auto flex flex-col h-full max-h-full px-3.5 py-3 min-h-0 overflow-hidden pb-safe">
+      {/* Back Navigation Bar */}
+      <div className="flex items-center justify-between flex-shrink-0">
         <button
           type="button"
           onClick={onBack}
@@ -42,11 +44,11 @@ export const PinEntry: React.FC<PinEntryProps> = ({
         </span>
       </div>
 
-      {/* Quizizz Signature Join Card */}
-      <div className="my-auto w-full py-2">
-        <PaperCard variant="ticket" className="w-full p-6 relative overflow-hidden">
+      {/* Centered Karcis PIN Ticket */}
+      <div className="flex-1 flex flex-col justify-center items-center w-full my-auto py-2">
+        <PaperCard variant="ticket" className="w-full p-4 sm:p-5 relative overflow-hidden shadow-stiker">
           {/* Ticket Header Stamp */}
-          <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-tinta/30 mb-4">
+          <div className="flex items-center justify-between pb-2 border-b-2 border-dashed border-tinta/30 mb-3">
             <div className="flex items-center gap-1.5 font-label font-bold text-xs text-coklat">
               <Ticket className="w-4 h-4 text-emas" />
               <span>KODE BERMAIN GAME</span>
@@ -56,7 +58,7 @@ export const PinEntry: React.FC<PinEntryProps> = ({
             </span>
           </div>
 
-          <div className="text-center mb-5">
+          <div className="text-center mb-4">
             <h2 className="font-display font-black text-2xl sm:text-3xl text-tinta leading-tight">
               {lang === "id" ? "Masukkan Kode Game" : "Enter Game Code"}
             </h2>
@@ -68,58 +70,31 @@ export const PinEntry: React.FC<PinEntryProps> = ({
           </div>
 
           {/* 6 Digit Input */}
-          <PinInput value={pin} onChange={onChangePin} length={6} error={error} />
+          <PinInput value={pin} onChange={onChangePin} length={6} error={error || undefined} />
 
-          {/* Demo Shortcut */}
-          <div className="flex justify-center mt-3">
-            <button
-              type="button"
-              onClick={() => onChangePin("482913")}
-              className="text-[11px] font-label font-bold text-coklat/70 hover:text-tinta underline decoration-dashed"
+          {/* Action Button Integrated Inside Karcis */}
+          <div className="w-full pt-4 mt-4 border-t-2 border-dashed border-tinta/25">
+            <StickerButton
+              variant="primary"
+              size="lg"
+              className="w-full text-lg sm:text-xl flex items-center justify-center gap-2"
+              onClick={onEnterRoom}
+              disabled={pin.trim().length < 6 || isChecking}
             >
-              [ demo PIN: 482913 ]
-            </button>
-          </div>
-
-          {/* QR Scan Action */}
-          <div className="mt-5 pt-4 border-t-2 border-dashed border-tinta/20 flex flex-col items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setShowQrSim(!showQrSim)}
-              className="w-full py-2 px-3.5 rounded-xl border-2 border-dashed border-coklat bg-kertas-putih text-tinta font-body font-bold text-xs flex items-center justify-center gap-2 hover:bg-kraft/30 btn-pressable"
-            >
-              <QrCode className="w-4 h-4 text-coklat" />
-              <span>{lang === "id" ? "Pindai Kode QR Ruangan" : "Scan Room QR Code"}</span>
-            </button>
-
-            {showQrSim && (
-              <div className="w-full p-3 rounded-xl bg-kertas-putih border-2 border-tinta text-center animate-fade-in">
-                <div className="w-20 h-20 mx-auto bg-kraft/40 rounded-lg border-2 border-tinta flex items-center justify-center mb-1.5">
-                  <QrCode className="w-14 h-14 text-tinta" />
-                </div>
-                <p className="font-body text-[11px] font-bold text-tinta">
-                  {lang === "id"
-                    ? "Kamera siap memindai QR code kuis..."
-                    : "Camera scanning room QR code..."}
-                </p>
-              </div>
-            )}
+              {isChecking ? (
+                <>
+                  <Loader2 className="w-5 h-5 text-tinta animate-spin" />
+                  <span>{lang === "id" ? "Memeriksa PIN..." : "Checking PIN..."}</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5 text-tinta" />
+                  <span>{lang === "id" ? "Gabung ke Permainan ➔" : "Join Game ➔"}</span>
+                </>
+              )}
+            </StickerButton>
           </div>
         </PaperCard>
-      </div>
-
-      {/* Enter Room Button */}
-      <div className="w-full pt-2">
-        <StickerButton
-          variant="primary"
-          size="lg"
-          className="w-full text-xl flex items-center justify-center gap-2"
-          onClick={onEnterRoom}
-          disabled={pin.trim().length < 6}
-        >
-          <Sparkles className="w-5 h-5 text-tinta" />
-          <span>{lang === "id" ? "Gabung ke Permainan ➔" : "Join Game ➔"}</span>
-        </StickerButton>
       </div>
     </div>
   );

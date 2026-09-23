@@ -17,8 +17,8 @@ export const SITES_DATA: SiteLocation[] = [
     id: 1,
     name: "Masjid Raya Sultan Riau",
     nameEn: "Sultan Riau Grand Mosque",
-    x: 18,
-    y: 86,
+    x: 22.0,
+    y: 89.5,
     color: "#2F7D4F",
     desc: "Masjid bersejarah berkubah kuning-hijau dibangun dengan perekat putih telur.",
     image: "/situs/masjid raya.webp",
@@ -27,8 +27,8 @@ export const SITES_DATA: SiteLocation[] = [
     id: 2,
     name: "Makam Engku Putri & Raja Ali Haji",
     nameEn: "Tomb of Engku Putri & Raja Ali Haji",
-    x: 35,
-    y: 67,
+    x: 36.8,
+    y: 68.3,
     color: "#9A6B12",
     desc: "Kompleks pemakaman sastrawan Melayu penggubah Gurindam 12 & permaisuri kesultanan.",
     image: "/situs/kompleks makam raja Ali haji.webp",
@@ -37,8 +37,8 @@ export const SITES_DATA: SiteLocation[] = [
     id: 3,
     name: "Istana Kantor",
     nameEn: "Kantor Palace (Raja Ali Marhum Kantor)",
-    x: 58,
-    y: 56,
+    x: 61.8,
+    y: 57.2,
     color: "#B4533A",
     desc: "Kediaman dan pusat administrasi Yang Dipertuan Muda Riau VIII.",
     image: "/situs/Istana Kantor.webp",
@@ -47,8 +47,8 @@ export const SITES_DATA: SiteLocation[] = [
     id: 4,
     name: "Gedung Tabib",
     nameEn: "Physician's House",
-    x: 77,
-    y: 38,
+    x: 77.8,
+    y: 38.6,
     color: "#5F7F2E",
     desc: "Reruntuhan kediaman tabib kerajaan yang dikelilingi rimbun tanaman obat.",
     image: "/situs/Gedung Tabib (1).webp",
@@ -57,8 +57,8 @@ export const SITES_DATA: SiteLocation[] = [
     id: 5,
     name: "Perigi Puteri",
     nameEn: "The Princess Well",
-    x: 84,
-    y: 14,
+    x: 78.2,
+    y: 11.8,
     color: "#2E7EA0",
     desc: "Mata air tawar jernih yang tak pernah kering di tepi pesisir pulau.",
     image: "/situs/perigi puteri.webp",
@@ -78,8 +78,6 @@ export const PulauPenyengatMap: React.FC<PulauPenyengatMapProps> = ({
   className = "",
   compact = false,
 }) => {
-  const activeSite = SITES_DATA[currentStage - 1] || SITES_DATA[0];
-
   return (
     <div
       className={`relative w-full overflow-hidden rounded-3xl border-3 border-tinta bg-[#0C3042] shadow-stiker select-none ${className}`}
@@ -92,9 +90,9 @@ export const PulauPenyengatMap: React.FC<PulauPenyengatMapProps> = ({
       />
 
       {/* Fold Overlay Effects */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10 z-10" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-black/10 z-10" />
 
-      {/* Dynamic Interactive Stage Markers overlaid on peta.webp */}
+      {/* Dynamic Interactive Stage Markers overlaid on trail dots */}
       <div className="absolute inset-0 z-20">
         {SITES_DATA.map((site) => {
           const isPassed = site.id < currentStage;
@@ -106,85 +104,33 @@ export const PulauPenyengatMap: React.FC<PulauPenyengatMapProps> = ({
               key={site.id}
               onClick={() => onSelectSite?.(site.id)}
               style={{ left: `${site.x}%`, top: `${site.y}%` }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group flex flex-col items-center"
+              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group flex flex-col items-center p-2"
+              title={`${site.id}. ${site.name}`}
             >
-              {/* Active Pulse Animation Rings */}
+              {/* Active Stage Indicator on Trail Dot */}
               {isActive && (
-                <>
-                  <span className="absolute -inset-3 rounded-full bg-kuning/50 animate-ping pointer-events-none" />
-                  <span className="absolute -inset-1.5 rounded-full bg-emas/70 animate-pulse pointer-events-none" />
-                </>
-              )}
-
-              {/* Pin Center Marker */}
-              <div
-                className={`relative w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-tinta flex items-center justify-center font-display font-black text-xs transition-transform duration-200 group-hover:scale-110 shadow-stiker-sm ${
-                  isActive
-                    ? "bg-kuning text-tinta scale-110 ring-3 ring-white ring-offset-1 ring-offset-tinta"
-                    : isPassed
-                    ? "bg-benar text-white"
-                    : "bg-kraft/90 text-tinta/80 opacity-85"
-                }`}
-              >
-                {isPassed ? (
-                  <Check className="w-4 h-4 stroke-[3]" />
-                ) : isActive ? (
-                  <MapPin className="w-4 h-4 fill-tinta text-tinta animate-bounce" />
-                ) : (
-                  <span className="font-label text-[11px] font-bold">{site.id}</span>
-                )}
-              </div>
-
-              {/* Status Tooltip Badges */}
-              {isActive && (
-                <div className="absolute -top-7 whitespace-nowrap bg-kuning text-tinta font-label font-black text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full border border-tinta shadow-stiker-sm flex items-center gap-1 animate-bounce">
-                  <span className="w-1.5 h-1.5 rounded-full bg-benar animate-pulse" />
-                  <span>Kamu Disini!</span>
+                <div className="relative flex items-center justify-center">
+                  <span className="absolute -inset-1.5 rounded-full bg-kuning/60 animate-ping pointer-events-none" />
+                  <div className="relative w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-kuning border-2 border-tinta flex items-center justify-center shadow-stiker-sm ring-2 ring-white">
+                    <span className="w-1.5 h-1.5 rounded-full bg-tinta" />
+                  </div>
                 </div>
               )}
 
-              {isPassed && !compact && (
-                <div className="absolute -bottom-5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-benar text-white font-label font-bold text-[9px] px-1.5 py-0.5 rounded-md border border-tinta shadow-xs pointer-events-none">
-                  ✓ Selesai
+              {/* Passed Stage Indicator */}
+              {isPassed && (
+                <div className="relative w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-benar border border-tinta flex items-center justify-center shadow-xs">
+                  <Check className="w-2.5 h-2.5 text-white stroke-[3]" />
                 </div>
               )}
 
-              {isUpcoming && !compact && (
-                <div className="absolute -bottom-5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-kertas-putih text-coklat font-label font-bold text-[9px] px-1.5 py-0.5 rounded-md border border-tinta shadow-xs pointer-events-none">
-                  Stage {site.id}
-                </div>
+              {/* Upcoming Stage Dot */}
+              {isUpcoming && (
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-white/70 border border-tinta/50 opacity-60 group-hover:scale-125 transition-transform" />
               )}
             </div>
           );
         })}
-      </div>
-
-      {/* Floating Header Progress Slip */}
-      <div className="absolute top-2.5 left-2.5 right-2.5 sm:right-auto px-3 py-1.5 bg-kertas-putih/95 border-2 border-tinta rounded-xl shadow-stiker-sm flex items-center justify-between sm:justify-start gap-2 z-20 backdrop-blur-xs">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="w-2.5 h-2.5 rounded-full border border-tinta animate-pulse"
-            style={{ backgroundColor: activeSite.color }}
-          />
-          <span className="font-label text-xs font-bold text-tinta">
-            Stage {currentStage}/5: <strong className="font-display font-extrabold">{activeSite.name}</strong>
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1 pl-1">
-          {SITES_DATA.map((s) => (
-            <span
-              key={s.id}
-              className={`w-2 h-2 rounded-full border border-tinta/40 transition-all ${
-                s.id === currentStage
-                  ? "bg-kuning scale-125 border-tinta"
-                  : s.id < currentStage
-                  ? "bg-benar"
-                  : "bg-kraft/50"
-              }`}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

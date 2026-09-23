@@ -28,15 +28,15 @@ export const StageSummary: React.FC<StageSummaryProps> = ({
   const isFinalStage = stageId === 5;
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[100dvh] p-4 sm:p-5 pb-safe">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-between h-full max-h-full p-2.5 sm:p-3 min-h-0 overflow-hidden pb-safe">
       {/* Top Badge */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-label text-xs font-bold text-tinta bg-kuning px-3 py-1 rounded-full border border-tinta shadow-stiker-sm">
+      <div className="flex items-center justify-between mb-1">
+        <span className="font-label text-xs font-bold text-tinta bg-kuning px-2.5 py-0.5 rounded-full border border-tinta shadow-stiker-sm">
           Stage {stageId}/5 Selesai ✓
         </span>
 
-        <div className="flex items-center gap-1.5 font-display font-extrabold text-sm text-tinta">
-          <Trophy className="w-4 h-4 text-emas" />
+        <div className="flex items-center gap-1.5 font-display font-extrabold text-xs sm:text-sm text-tinta">
+          <Trophy className="w-3.5 h-3.5 text-emas" />
           <span>
             {lang === "id"
               ? `Peringkat: ${currentRank} dari ${totalPlayers}`
@@ -77,11 +77,11 @@ export const StageSummary: React.FC<StageSummaryProps> = ({
       </div>
 
       {/* Next Button */}
-      <div className="w-full pt-3">
+      <div className="w-full pt-1.5">
         <StickerButton
           variant="primary"
-          size="lg"
-          className="w-full text-xl flex items-center justify-center gap-2"
+          size="md"
+          className="w-full text-lg py-2.5 flex items-center justify-center gap-2"
           onClick={onNextStage}
         >
           <span>
@@ -93,7 +93,7 @@ export const StageSummary: React.FC<StageSummaryProps> = ({
               ? "Lanjut ke Stage Berikutnya"
               : "Next Heritage Site"}
           </span>
-          <ArrowRight className="w-5 h-5 flex-shrink-0" />
+          <ArrowRight className="w-4 h-4 flex-shrink-0" />
         </StickerButton>
       </div>
     </div>

@@ -40,41 +40,7 @@ interface CreateRoomProps {
   onLogout: () => void;
 }
 
-const INITIAL_ROOMS: HostRoom[] = [
-  {
-    id: "room-1",
-    pin: "482913",
-    name: "Kelas 8-B — Sejarah Riau",
-    gradeLevel: "SMP",
-    sessionMode: "NORMAL",
-    playerCount: 8,
-    maxPlayers: 15,
-    status: "LOBBY",
-    createdAt: "Baru saja",
-  },
-  {
-    id: "room-2",
-    pin: "719204",
-    name: "Kelas 7-A — Jelajah Penyengat",
-    gradeLevel: "SMP",
-    sessionMode: "NORMAL",
-    playerCount: 12,
-    maxPlayers: 15,
-    status: "RUNNING",
-    createdAt: "15 menit lalu",
-  },
-  {
-    id: "room-3",
-    pin: "531980",
-    name: "Kelas 9-C — Sesi Singkat",
-    gradeLevel: "SMP",
-    sessionMode: "QUICK",
-    playerCount: 15,
-    maxPlayers: 15,
-    status: "FINISHED",
-    createdAt: "45 menit lalu",
-  },
-];
+const INITIAL_ROOMS: HostRoom[] = [];
 
 export const CreateRoom: React.FC<CreateRoomProps> = ({
   rooms,
@@ -130,7 +96,7 @@ export const CreateRoom: React.FC<CreateRoomProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col justify-between min-h-[calc(100dvh-60px)] px-4 py-4 sm:p-6 pb-safe">
+    <div className="w-full max-w-5xl mx-auto flex flex-col justify-between h-full max-h-full min-h-0 px-4 py-3 sm:p-4 overflow-y-auto pb-safe">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b-2 border-tinta/20 mb-5">
         <div>

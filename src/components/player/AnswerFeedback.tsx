@@ -12,6 +12,7 @@ interface AnswerFeedbackProps {
   earnedPoints: number;
   totalScore: number;
   streak: number;
+  explanation?: string;
   onNext: () => void;
   lang: "id" | "en";
 }
@@ -23,6 +24,7 @@ export const AnswerFeedback: React.FC<AnswerFeedbackProps> = ({
   earnedPoints,
   totalScore,
   streak,
+  explanation,
   onNext,
   lang,
 }) => {
@@ -43,22 +45,22 @@ export const AnswerFeedback: React.FC<AnswerFeedbackProps> = ({
   return (
     <div
       onClick={onNext}
-      className="w-full max-w-md mx-auto flex flex-col justify-between min-h-[calc(100dvh-60px)] px-3.5 py-3 pb-safe cursor-pointer select-none"
+      className="w-full max-w-md mx-auto flex flex-col justify-between h-full max-h-full px-3 py-1.5 min-h-0 overflow-hidden pb-safe cursor-pointer select-none"
     >
       {/* Top Banner (Quizizz Flash Banner) */}
       <div
-        className={`w-full py-3.5 px-4 rounded-3xl border-3 border-tinta shadow-stiker flex items-center justify-between text-white animate-stamp-drop ${
+        className={`w-full py-2.5 px-3.5 rounded-2xl border-2 sm:border-3 border-tinta shadow-stiker flex items-center justify-between text-white animate-stamp-drop ${
           isCorrect ? "bg-benar" : "bg-salah"
         }`}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           {isCorrect ? (
-            <CheckCircle2 className="w-8 h-8 stroke-[3] text-white" />
+            <CheckCircle2 className="w-7 h-7 stroke-[3] text-white" />
           ) : (
-            <XCircle className="w-8 h-8 stroke-[3] text-white" />
+            <XCircle className="w-7 h-7 stroke-[3] text-white" />
           )}
           <div>
-            <h2 className="font-display font-black text-2xl leading-none">
+            <h2 className="font-display font-black text-xl leading-none">
               {isCorrect
                 ? lang === "id"
                   ? "BENAR!"
@@ -67,34 +69,34 @@ export const AnswerFeedback: React.FC<AnswerFeedbackProps> = ({
                 ? "KURANG TEPAT!"
                 : "INCORRECT!"}
             </h2>
-            <span className="font-label text-xs font-bold opacity-90">
-              {isCorrect ? "+850 Poin Kecepatan" : "Tetap semangat!"}
+            <span className="font-label text-[11px] font-bold opacity-90">
+              {isCorrect ? `+${earnedPoints} Poin` : "Tetap semangat!"}
             </span>
           </div>
         </div>
 
         {/* Earned Points Badge */}
         {isCorrect && (
-          <div className="px-3 py-1 bg-white text-benar border-2 border-tinta rounded-xl font-display font-black text-base shadow-sm animate-bounce">
+          <div className="px-2.5 py-0.5 bg-white text-benar border-2 border-tinta rounded-xl font-display font-black text-sm shadow-sm animate-bounce">
             +{earnedPoints.toLocaleString()}
           </div>
         )}
       </div>
 
       {/* Center Mascot & Streak Celebration */}
-      <div className="my-auto flex flex-col items-center py-2">
+      <div className="my-auto flex flex-col items-center py-1">
         {/* Streak Flare Banner if active */}
         {streak >= 2 && isCorrect && (
-          <div className="mb-2 px-3.5 py-1 rounded-full bg-kuning text-tinta border-2 border-tinta font-display font-black text-xs flex items-center gap-1.5 shadow-stiker-sm animate-pulse">
-            <Flame className="w-4 h-4 text-salah fill-salah" />
-            <span>{streak}x BERUNTUN! BONUS BERKALI LIPAT</span>
+          <div className="mb-1 px-3 py-0.5 rounded-full bg-kuning text-tinta border-2 border-tinta font-display font-black text-xs flex items-center gap-1 shadow-stiker-sm animate-pulse">
+            <Flame className="w-3.5 h-3.5 text-salah fill-salah" />
+            <span>{streak}x BERUNTUN!</span>
           </div>
         )}
 
         {/* Mascot Reaction */}
         <MascotSakti
           pose={isCorrect ? "cheering" : "encouraging"}
-          size={140}
+          size={95}
           speechBubble={
             isCorrect
               ? lang === "id"
@@ -107,30 +109,30 @@ export const AnswerFeedback: React.FC<AnswerFeedbackProps> = ({
         />
 
         {/* Historical Explanation Box */}
-        <PaperCard variant="memo" className="w-full p-4 mt-2">
+        <PaperCard variant="memo" className="w-full p-2.5 sm:p-3 mt-1.5">
           {/* Answer Key Reveal */}
-          <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-dashed border-kraft">
-            <span className="font-label text-xs font-bold text-coklat uppercase">
+          <div className="flex items-center justify-between pb-1 mb-1.5 border-b border-dashed border-kraft">
+            <span className="font-label text-[11px] font-bold text-coklat uppercase">
               {lang === "id" ? "Jawaban Benar:" : "Correct Answer:"}
             </span>
-            <span className="font-display font-black text-sm text-benar">
+            <span className="font-display font-black text-xs sm:text-sm text-benar">
               {question.correctKey}. {lang === "id" ? correctOption?.textId : correctOption?.textEn}
             </span>
           </div>
 
           {/* Historical Sentence */}
-          <p className="font-body text-xs sm:text-sm text-tinta font-semibold leading-relaxed">
-            {lang === "id" ? question.explanationId : question.explanationEn}
+          <p className="font-body text-xs text-tinta font-semibold leading-relaxed">
+            {explanation || (lang === "id" ? question.explanationId : question.explanationEn)}
           </p>
         </PaperCard>
       </div>
 
       {/* Quizizz Tap to Continue Bar */}
-      <div className="w-full pt-2">
+      <div className="w-full pt-1.5">
         <StickerButton
           variant="primary"
-          size="lg"
-          className="w-full text-lg flex items-center justify-center gap-2"
+          size="md"
+          className="w-full text-base py-2 flex items-center justify-center gap-2"
           onClick={onNext}
         >
           <span>
@@ -138,7 +140,7 @@ export const AnswerFeedback: React.FC<AnswerFeedbackProps> = ({
               ? `Lanjut (${secondsLeft}s)`
               : `Next (${secondsLeft}s)`}
           </span>
-          <ArrowRight className="w-5 h-5 flex-shrink-0" />
+          <ArrowRight className="w-4 h-4 flex-shrink-0" />
         </StickerButton>
       </div>
     </div>
