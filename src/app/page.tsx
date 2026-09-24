@@ -73,6 +73,13 @@ export type ScreenKey =
 
 const INITIAL_HOST_ROOMS: HostRoom[] = [];
 
+function parseSafeJenjang(input: string): Jenjang {
+  const norm = (input || "").trim().toUpperCase();
+  if (norm.includes("SMA") || norm.includes("SMK") || norm.includes("MA")) return "SMA";
+  if (norm.includes("SMP") || norm.includes("MTS")) return "SMP";
+  return "SD";
+}
+
 export default function App() {
   // Navigation State
   const [currentStep, setCurrentStep] = useState<ScreenKey>("pilih-bahasa");
@@ -89,7 +96,7 @@ export default function App() {
   const [playerName, setPlayerName] = useState("");
   const [school, setSchool] = useState("");
   const [schoolId, setSchoolId] = useState<number | null>(null);
-  const [gradeLevel, setGradeLevel] = useState<"SD" | "SMP" | "SMA" | "UMUM">("SD");
+  const [gradeLevel, setGradeLevel] = useState<string>("SMP");
   const [gradeClass, setGradeClass] = useState("");
   const [avatarId, setAvatarId] = useState("1");
   const [currentStage, setCurrentStage] = useState(1);
@@ -382,7 +389,7 @@ export default function App() {
     }
     const stageQuestions = getQuestionsForStage(
       currentStage,
-      gradeLevel === "UMUM" ? "SD" : gradeLevel
+      parseSafeJenjang(gradeLevel)
     );
     return stageQuestions[stageQuestionIndex] || stageQuestions[0];
   }, [
@@ -674,7 +681,7 @@ export default function App() {
       const res = await joinRoom(cleanPin, {
         nickname: cleanNick,
         school_id: validSchoolId,
-        jenjang: (gradeLevel === "UMUM" ? "SD" : gradeLevel) as Jenjang,
+        jenjang: parseSafeJenjang(gradeLevel),
         avatar: cleanAvatar,
         lang: lang,
       });
@@ -843,7 +850,7 @@ export default function App() {
     } else {
       const stageQuestions = getQuestionsForStage(
         currentStage,
-        gradeLevel === "UMUM" ? "SD" : gradeLevel
+        parseSafeJenjang(gradeLevel)
       );
       if (stageQuestionIndex < stageQuestions.length - 1) {
         setStageQuestionIndex((prev) => prev + 1);
