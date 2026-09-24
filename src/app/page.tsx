@@ -153,6 +153,25 @@ export default function App() {
       } else if (savedStep && !savedStep.startsWith("host-")) {
         setCurrentStep(savedStep);
       }
+
+      // Check if URL has ?pin= query parameter (from QR code scan or direct link)
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlPin = urlParams.get("pin");
+      if (urlPin && urlPin.trim().length === 6) {
+        const cleanUrlPin = urlPin.trim();
+        setPin(cleanUrlPin);
+        setCurrentStep("masukkan-pin");
+        getRoomByPin(cleanUrlPin)
+          .then((roomInfo) => {
+            if (roomInfo.status === "lobby" || roomInfo.status === "running") {
+              setGradeLevel(roomInfo.jenjang);
+              setCurrentStep("daftar-peserta");
+            }
+          })
+          .catch((err) => {
+            console.warn("Auto-check QR pin failed:", err);
+          });
+      }
     } catch (e) {
       console.warn("Failed to restore session from localStorage", e);
     }
@@ -697,6 +716,7 @@ export default function App() {
           maxPlayers: 15,
           status: "LOBBY",
           createdAt: "Baru saja",
+          qr_url: res.qr_url,
         };
         setHostRooms((prev) => [newRoom, ...prev]);
         setSelectedRoomId(res.id);
@@ -1203,6 +1223,7 @@ export default function App() {
                 roomName={currentHostRoom.name}
                 gradeLevel={currentHostRoom.gradeLevel}
                 sessionMode={currentHostRoom.sessionMode}
+                qrUrl={currentHostRoom.qr_url}
                 players={mappedHostPlayers}
                 onStartSession={handleStartHostSession}
                 onEndSession={() => {

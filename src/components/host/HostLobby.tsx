@@ -3,7 +3,8 @@ import { PaperCard } from "../ui/PaperCard";
 import { StickerButton } from "../ui/StickerButton";
 import { LogoInderasakti } from "../assets/LogoInderasakti";
 import { AvatarIcon } from "../assets/AvatarCollection";
-import { QrCode, Users, Play, LogOut, Sparkles, ArrowLeft } from "lucide-react";
+import { QrCodeView } from "../ui/QrCodeView";
+import { Users, Play, LogOut, Sparkles, ArrowLeft } from "lucide-react";
 
 interface JoinedHostPlayer {
   id: string;
@@ -17,6 +18,7 @@ interface HostLobbyProps {
   roomName: string;
   gradeLevel: string;
   sessionMode: string;
+  qrUrl?: string;
   players?: JoinedHostPlayer[];
   onStartSession: () => void;
   onEndSession: () => void;
@@ -31,6 +33,7 @@ export const HostLobby: React.FC<HostLobbyProps> = ({
   roomName = "Sesi Kuis Budaya",
   gradeLevel = "SMP",
   sessionMode = "NORMAL",
+  qrUrl,
   players = DEFAULT_HOST_PLAYERS,
   onStartSession,
   onEndSession,
@@ -95,10 +98,18 @@ export const HostLobby: React.FC<HostLobbyProps> = ({
 
             {/* Giant QR Code */}
             <div className="mt-4 sm:mt-5 p-3 sm:p-4 bg-kertas-putih rounded-2xl border-3 border-tinta shadow-stiker-sm inline-flex flex-col items-center">
-              <div className="w-36 h-36 sm:w-44 sm:h-44 bg-kraft/40 rounded-xl border-2 border-tinta flex items-center justify-center p-2">
-                <QrCode className="w-full h-full text-tinta" />
+              <div className="w-36 h-36 sm:w-44 sm:h-44 bg-white rounded-xl border-2 border-tinta flex items-center justify-center p-1.5 overflow-hidden shadow-inner">
+                <QrCodeView
+                  value={
+                    qrUrl ||
+                    (typeof window !== "undefined"
+                      ? `${window.location.origin}/?pin=${roomCode}`
+                      : `https://penyengatadventure.tech/?pin=${roomCode}`)
+                  }
+                  size={160}
+                />
               </div>
-              <span className="font-body text-xs font-bold text-coklat mt-2">
+              <span className="font-body text-xs font-bold text-coklat mt-2 text-center">
                 Scan langsung pakai kamera HP
               </span>
             </div>

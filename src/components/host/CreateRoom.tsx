@@ -25,6 +25,7 @@ export interface HostRoom {
   maxPlayers: number;
   status: "LOBBY" | "RUNNING" | "FINISHED";
   createdAt: string;
+  qr_url?: string;
 }
 
 interface CreateRoomProps {
