@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import QRCode from "qrcode";
+import React, { useState } from "react";
 
 interface QrCodeViewProps {
   value: string;
@@ -14,40 +13,45 @@ export const QrCodeView: React.FC<QrCodeViewProps> = ({
   size = 180,
   className = "",
 }) => {
-  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
-  useEffect(() => {
-    if (!value) return;
-    QRCode.toDataURL(value, {
-      width: size * 2, // 2x for ultra-sharp rendering on mobile screens & projectors
-      margin: 1,
-      color: {
-        dark: "#2A2A2A", // Brand ink / tinta
-        light: "#FFFFFF",
-      },
-    })
-      .then((url) => setQrDataUrl(url))
-      .catch((err) => console.error("Gagal menghasilkan QR Code:", err));
-  }, [value, size]);
-
-  if (!qrDataUrl) {
-    return (
-      <div
-        className={`flex items-center justify-center bg-white rounded-xl ${className}`}
-        style={{ width: size, height: size }}
-      >
-        <div className="w-6 h-6 border-2 border-tinta/30 border-t-tinta rounded-full animate-spin" />
-      </div>
-    );
-  }
+  // Clean, high-resolution QR Generator URL without requiring native npm bindings
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${Math.round(
+    size * 2
+  )}x${Math.round(size * 2)}&margin=6&color=2A2A2A&bgcolor=FFFFFF&data=${encodeURIComponent(
+    value
+  )}`;
 
   return (
-    <img
-      src={qrDataUrl}
-      alt={`QR Code untuk ${value}`}
-      width={size}
-      height={size}
-      className={`rounded-lg object-contain bg-white shadow-xs ${className}`}
-    />
+    <div
+      className={`relative flex items-center justify-center bg-white rounded-xl overflow-hidden ${className}`}
+      style={{ width: size, height: size }}
+    >
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white">
+          <div className="w-6 h-6 border-2 border-tinta/30 border-t-tinta rounded-full animate-spin" />
+        </div>
+      )}
+
+      {!hasError ? (
+        <img
+          src={qrUrl}
+          alt={`QR Code untuk ${value}`}
+          width={size}
+          height={size}
+          onLoad={() => setIsLoaded(true)}
+          onError={() => setHasError(true)}
+          className={`w-full h-full object-contain ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          } transition-opacity duration-300`}
+        />
+      ) : (
+        <div className="flex flex-col items-center justify-center p-2 text-center text-xs text-coklat">
+          <span className="font-bold">Scan via URL</span>
+          <span className="text-[10px] break-all">{value}</span>
+        </div>
+      )}
+    </div>
   );
 };

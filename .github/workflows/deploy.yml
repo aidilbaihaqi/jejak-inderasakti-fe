@@ -16,7 +16,7 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      - run: npm ci || npm install
       - run: npm run build
 
   # Never runs on pull_request, only on a real push to deploy — so a fork/PR can't exfiltrate
