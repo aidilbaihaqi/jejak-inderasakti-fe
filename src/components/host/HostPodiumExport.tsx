@@ -99,17 +99,17 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
   const p3 = results[2];
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col justify-between h-full max-h-full min-h-0 overflow-y-auto p-4 sm:p-6">
+    <div className="w-full max-w-6xl mx-auto flex flex-col min-h-0 overflow-y-auto p-2 sm:p-6 pb-safe space-y-4">
       {/* Top Navbar */}
-      <div className="flex items-center justify-between pb-4 border-b-3 border-tinta mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b-2 sm:border-b-3 border-tinta">
         <LogoInderasakti variant="horizontal" />
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {onBackToRooms && (
             <button
               type="button"
               onClick={onBackToRooms}
-              className="px-3.5 py-1.5 rounded-xl border-2 border-tinta bg-kertas-putih font-body text-xs font-bold text-tinta hover:bg-kraft/70 btn-pressable shadow-stiker-sm flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-xl border-2 border-tinta bg-kertas-putih font-body text-xs font-bold text-tinta hover:bg-kraft/70 btn-pressable shadow-stiker-sm flex items-center gap-1.5"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Daftar Ruangan</span>
@@ -119,9 +119,9 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
           <button
             type="button"
             onClick={handleDownloadCsv}
-            className="px-4 py-2 rounded-xl bg-kuning text-tinta border-2 border-tinta font-display font-black text-sm flex items-center gap-2 btn-pressable shadow-stiker-sm hover:bg-[#FFD147]"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-kuning text-tinta border-2 border-tinta font-display font-black text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 btn-pressable shadow-stiker-sm hover:bg-[#FFD147]"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>Unduh Rekap Nilai (CSV)</span>
           </button>
 
@@ -138,10 +138,10 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
       </div>
 
       {/* Main Grid: Podium on Left, Full Results Table on Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 flex-1">
         {/* Left Side: Projector 3-Tier Podium */}
         <div className="lg:col-span-5 flex flex-col">
-          <PaperCard variant="memo" className="p-5 flex-1 flex flex-col items-center justify-between text-center">
+          <PaperCard variant="memo" className="p-4 sm:p-5 flex-1 flex flex-col items-center justify-between text-center">
             <span className="font-label text-xs font-bold text-emas tracking-widest uppercase">
               ✦ HASIL AKHIR SESI KUIS ✦
             </span>
@@ -251,61 +251,61 @@ export const HostPodiumExport: React.FC<HostPodiumExportProps> = ({
                 </span>
               </div>
             ) : (
-              <div className="overflow-x-auto flex-1 max-h-[380px]">
-              <table className="w-full text-left font-body text-xs">
-                <thead>
-                  <tr className="border-b-2 border-tinta/30 font-display font-extrabold text-coklat uppercase text-[10px]">
-                    <th className="py-2 px-1">#</th>
-                    <th className="py-2 px-2">Nama</th>
-                    <th className="py-2 px-2">Sekolah</th>
-                    <th className="py-2 px-2 text-right">Skor</th>
-                    <th className="py-2 px-2 text-center">Benar</th>
-                    <th className="py-2 px-2 text-right">Waktu</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-kraft">
-                  {results.map((r) => (
-                    <tr
-                      key={r.rank}
-                      className={`hover:bg-kuning/20 transition-colors ${
-                        r.rank <= 3 ? "font-bold text-tinta" : "text-tinta/80"
-                      }`}
-                    >
-                      <td className="py-2 px-1 font-label font-bold">
-                        {r.rank === 1 ? "🥇" : r.rank === 2 ? "🥈" : r.rank === 3 ? "🥉" : r.rank}
-                      </td>
-                      <td className="py-2 px-2 flex items-center gap-1.5 font-bold">
-                        <AvatarIcon id={r.avatarId} size={24} />
-                        <span>{r.name}</span>
-                      </td>
-                      <td className="py-2 px-2 text-coklat truncate max-w-[150px]">
-                        {r.school}
-                      </td>
-                      <td className="py-2 px-2 text-right font-label font-black text-tinta">
-                        {r.score.toLocaleString()}
-                      </td>
-                      <td className="py-2 px-2 text-center font-label text-benar font-bold">
-                        {r.correctAnswers}/{r.totalQuestions}
-                      </td>
-                      <td className="py-2 px-2 text-right font-label text-coklat">
-                        {r.timeTaken}
-                      </td>
+              <div className="overflow-x-auto flex-1 max-h-[380px] -mx-1 sm:mx-0">
+                <table className="w-full min-w-[460px] text-left font-body text-xs">
+                  <thead>
+                    <tr className="border-b-2 border-tinta/30 font-display font-extrabold text-coklat uppercase text-[10px]">
+                      <th className="py-2 px-1">#</th>
+                      <th className="py-2 px-2">Nama</th>
+                      <th className="py-2 px-2">Sekolah</th>
+                      <th className="py-2 px-2 text-right">Skor</th>
+                      <th className="py-2 px-2 text-center">Benar</th>
+                      <th className="py-2 px-2 text-right">Waktu</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-kraft">
+                    {results.map((r) => (
+                      <tr
+                        key={r.rank}
+                        className={`hover:bg-kuning/20 transition-colors ${
+                          r.rank <= 3 ? "font-bold text-tinta" : "text-tinta/80"
+                        }`}
+                      >
+                        <td className="py-2 px-1 font-label font-bold">
+                          {r.rank === 1 ? "🥇" : r.rank === 2 ? "🥈" : r.rank === 3 ? "🥉" : r.rank}
+                        </td>
+                        <td className="py-2 px-2 flex items-center gap-1.5 font-bold">
+                          <AvatarIcon id={r.avatarId} size={24} />
+                          <span className="truncate max-w-[100px] sm:max-w-none">{r.name}</span>
+                        </td>
+                        <td className="py-2 px-2 text-coklat truncate max-w-[120px] sm:max-w-[150px]">
+                          {r.school}
+                        </td>
+                        <td className="py-2 px-2 text-right font-label font-black text-tinta">
+                          {r.score.toLocaleString()}
+                        </td>
+                        <td className="py-2 px-2 text-center font-label text-benar font-bold">
+                          {r.correctAnswers}/{r.totalQuestions}
+                        </td>
+                        <td className="py-2 px-2 text-right font-label text-coklat">
+                          {r.timeTaken}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
 
             {/* Footer CSV button note */}
-            <div className="mt-4 pt-3 border-t border-dashed border-kraft flex items-center justify-between">
-              <span className="font-label text-xs text-coklat font-bold">
+            <div className="mt-4 pt-3 border-t border-dashed border-kraft flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs font-label">
+              <span className="text-coklat font-bold">
                 Format file: CSV (Kompatibel dengan Microsoft Excel)
               </span>
               <button
                 type="button"
                 onClick={handleDownloadCsv}
-                className="font-display font-bold text-xs text-tinta underline hover:text-coklat flex items-center gap-1"
+                className="font-display font-bold text-tinta underline hover:text-coklat flex items-center gap-1 self-start sm:self-auto"
               >
                 <Download className="w-3.5 h-3.5" />
                 Unduh Sekarang

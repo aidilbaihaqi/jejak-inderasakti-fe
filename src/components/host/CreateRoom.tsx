@@ -96,14 +96,14 @@ export const CreateRoom: React.FC<CreateRoomProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col justify-between h-full max-h-full min-h-0 px-4 py-3 sm:p-4 overflow-y-auto pb-safe">
+    <div className="w-full max-w-5xl mx-auto flex flex-col min-h-0 px-2 sm:px-4 py-3 sm:p-4 overflow-y-auto pb-safe">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b-2 border-tinta/20 mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b-2 border-tinta/20 mb-4 sm:mb-5">
         <div>
-          <span className="font-label text-xs font-bold text-coklat tracking-wider uppercase block">
+          <span className="font-label text-[11px] sm:text-xs font-bold text-coklat tracking-wider uppercase block">
             PORTAL GURU & HOST
           </span>
-          <h2 className="font-display font-black text-2xl sm:text-3xl text-tinta">
+          <h2 className="font-display font-black text-xl sm:text-3xl text-tinta">
             Manajemen Ruangan Kuis
           </h2>
           <p className="font-body text-xs text-coklat font-semibold mt-0.5">
@@ -111,7 +111,7 @@ export const CreateRoom: React.FC<CreateRoomProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <div className="px-3 py-1.5 rounded-xl bg-kertas-putih border-2 border-tinta font-label font-bold text-xs text-tinta shadow-stiker-sm flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5 text-emas" />
             <span>
@@ -130,12 +130,12 @@ export const CreateRoom: React.FC<CreateRoomProps> = ({
       </div>
 
       {/* Main Content: Room List or Creation Form */}
-      <div className="flex-1 my-auto w-full">
+      <div className="flex-1 w-full">
         {/* Active Rooms Grid */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-display font-black text-lg text-tinta flex items-center gap-2">
-              <Ticket className="w-5 h-5 text-emas" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <h3 className="font-display font-black text-base sm:text-lg text-tinta flex items-center gap-2">
+              <Ticket className="w-5 h-5 text-emas flex-shrink-0" />
               <span>Daftar Ruangan Sesi ({roomList.length})</span>
             </h3>
 
@@ -145,7 +145,7 @@ export const CreateRoom: React.FC<CreateRoomProps> = ({
                 size="sm"
                 onClick={() => setIsCreatingNew(true)}
                 disabled={!canCreateMore}
-                className="flex items-center gap-1.5"
+                className="flex items-center justify-center gap-1.5 w-full sm:w-auto"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>+ Buat Ruangan Baru</span>

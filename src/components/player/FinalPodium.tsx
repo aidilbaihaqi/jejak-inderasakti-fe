@@ -25,20 +25,15 @@ interface FinalPodiumProps {
   lang: "id" | "en";
 }
 
-const DEFAULT_TOP_PLAYERS: TopPlayer[] = [
-  { rank: 1, name: "Bimo", avatarId: "1", score: 12450 },
-  { rank: 2, name: "Rani", avatarId: "4", score: 11200 },
-  { rank: 3, name: "Siti", avatarId: "2", score: 10850 },
-];
 
 export const FinalPodium: React.FC<FinalPodiumProps> = ({
   playerName,
-  playerRank = 1,
-  totalPlayers = 8,
-  playerScore = 12450,
-  correctCount = 13,
+  playerRank = 0,
+  totalPlayers = 0,
+  playerScore = 0,
+  correctCount = 0,
   totalQuestions = 15,
-  topPlayers = DEFAULT_TOP_PLAYERS,
+  topPlayers = [],
   onFinish,
   lang,
 }) => {
@@ -69,9 +64,9 @@ export const FinalPodium: React.FC<FinalPodiumProps> = ({
     })();
   }, []);
 
-  const p1 = topPlayers.find((p) => p.rank === 1) || DEFAULT_TOP_PLAYERS[0];
-  const p2 = topPlayers.find((p) => p.rank === 2) || DEFAULT_TOP_PLAYERS[1];
-  const p3 = topPlayers.find((p) => p.rank === 3) || DEFAULT_TOP_PLAYERS[2];
+  const p1 = topPlayers.find((p) => p.rank === 1);
+  const p2 = topPlayers.find((p) => p.rank === 2);
+  const p3 = topPlayers.find((p) => p.rank === 3);
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col justify-between h-full max-h-full p-2.5 sm:p-3 min-h-0 overflow-hidden pb-safe">
@@ -101,6 +96,7 @@ export const FinalPodium: React.FC<FinalPodiumProps> = ({
       {/* 3-Tier Podium */}
       <div className="w-full flex items-end justify-center gap-1.5 px-2 my-auto">
         {/* Rank 2 (Silver) */}
+        {p2 ? (
         <div className="flex-1 flex flex-col items-center">
           <AvatarIcon id={p2.avatarId} size={40} />
           <span className="font-display font-black text-xs text-tinta mt-0.5 truncate max-w-[70px]">
@@ -114,8 +110,12 @@ export const FinalPodium: React.FC<FinalPodiumProps> = ({
             <span className="font-label text-[8px] font-bold text-tinta">PERAK</span>
           </div>
         </div>
+        ) : (
+          <div className="flex-1" />
+        )}
 
         {/* Rank 1 (Gold - Tallest) */}
+        {p1 ? (
         <div className="flex-1 flex flex-col items-center -mt-4">
           <div className="relative">
             <AvatarIcon id={p1.avatarId} size={48} selected />
@@ -132,8 +132,12 @@ export const FinalPodium: React.FC<FinalPodiumProps> = ({
             <span className="font-label text-[9px] font-black text-tinta">EMAS</span>
           </div>
         </div>
+        ) : (
+          <div className="flex-1" />
+        )}
 
         {/* Rank 3 (Bronze) */}
+        {p3 ? (
         <div className="flex-1 flex flex-col items-center">
           <AvatarIcon id={p3.avatarId} size={40} />
           <span className="font-display font-black text-xs text-tinta mt-0.5 truncate max-w-[70px]">
@@ -147,6 +151,9 @@ export const FinalPodium: React.FC<FinalPodiumProps> = ({
             <span className="font-label text-[8px] font-bold text-white">PERUNGGU</span>
           </div>
         </div>
+        ) : (
+          <div className="flex-1" />
+        )}
       </div>
 
       {/* User's Personal Result Card */}

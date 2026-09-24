@@ -37,14 +37,14 @@ export const HostLogin: React.FC<HostLoginProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto flex flex-col justify-between h-full max-h-full p-3 sm:p-4 min-h-0 overflow-hidden">
+    <div className="w-full max-w-md mx-auto flex flex-col justify-center min-h-full py-4 px-2 sm:px-4 space-y-4">
       {/* Top Header */}
       <div className="w-full flex justify-center pt-1">
         <LogoInderasakti variant="horizontal" />
       </div>
 
       {/* Login Card */}
-      <div className="my-auto w-full py-1">
+      <div className="w-full">
         <PaperCard
           variant="memo"
           washiTape

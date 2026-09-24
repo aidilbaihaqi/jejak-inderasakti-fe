@@ -158,21 +158,63 @@ export function getAllSessionQuestions(
   return all;
 }
 
+function cleanPrompt(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[^a-z0-9]/g, "");
+}
+
 /**
  * Match a raw question from the question bank by prompt text (exact or trimmed)
  * Used to resolve real question IDs and explanations for live WebSocket payloads
  */
-export function findQuestionByPrompt(prompt: string): RawDbQuestion | undefined {
+export function findQuestionByPrompt(
+  prompt: string,
+  site?: number,
+  optionLabels?: string[]
+): RawDbQuestion | undefined {
   if (!prompt) return undefined;
   const normalized = prompt.trim().toLowerCase();
+  const cleaned = cleanPrompt(prompt);
 
-  return DB_QUESTIONS.find(
+  const candidates = site ? DB_QUESTIONS.filter((q) => q.site === site) : DB_QUESTIONS;
+
+  // 1. Exact match on raw prompt id/en
+  let match = candidates.find(
     (q) =>
       q.prompt.id.trim().toLowerCase() === normalized ||
-      q.prompt.en.trim().toLowerCase() === normalized ||
-      normalized.includes(q.prompt.id.trim().toLowerCase()) ||
-      q.prompt.id.trim().toLowerCase().includes(normalized)
+      q.prompt.en.trim().toLowerCase() === normalized
   );
+  if (match) return match;
+
+  // 2. Cleaned alphanumeric match
+  match = candidates.find(
+    (q) =>
+      cleanPrompt(q.prompt.id) === cleaned ||
+      cleanPrompt(q.prompt.en) === cleaned ||
+      (cleaned.length > 10 && cleanPrompt(q.prompt.id).includes(cleaned)) ||
+      (cleaned.length > 10 && cleaned.includes(cleanPrompt(q.prompt.id)))
+  );
+  if (match) return match;
+
+  // 3. Option labels match (if option labels are provided)
+  if (optionLabels && optionLabels.length > 0) {
+    const cleanedLabels = optionLabels.map(cleanPrompt).filter((l) => l.length > 0);
+    match = candidates.find((q) => {
+      const qLabels = q.options.flatMap((o) => [cleanPrompt(o.label.id), cleanPrompt(o.label.en)]);
+      return cleanedLabels.some((cl) => qLabels.includes(cl));
+    });
+    if (match) return match;
+  }
+
+  // 4. Fallback search across all questions if site filter yielded no match
+  if (site) {
+    return findQuestionByPrompt(prompt, undefined, optionLabels);
+  }
+
+  return undefined;
 }
 
 /**
