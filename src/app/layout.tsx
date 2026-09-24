@@ -34,7 +34,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jejak Inderasakti — Jelajah Pulau Penyengat",
+  title: "WOIIII UBAH INI NANTI YAA AWAS AJA JANGAN SAMPAI KE PUSH DI PRODUCTION ATAU SEO",
   description: "Game kuis petualangan edukatif menjelajahi 5 situs cagar budaya Pulau Penyengat",
 };
 
