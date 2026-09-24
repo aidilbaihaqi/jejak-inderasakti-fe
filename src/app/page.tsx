@@ -25,6 +25,7 @@ import {
   Jenjang,
 } from "@/lib/api";
 import { useGameSocket } from "@/hooks/useGameSocket";
+import { useAudioManager } from "@/hooks/useAudioManager";
 import { WsRanking } from "@/lib/socket";
 import {
   getQuestionsForStage,
@@ -76,7 +77,7 @@ export default function App() {
   // Navigation State
   const [currentStep, setCurrentStep] = useState<ScreenKey>("pilih-bahasa");
   const [lang, setLang] = useState<"id" | "en">("id");
-  const [isMuted, setIsMuted] = useState(false);
+  const { isMuted, setIsMuted, toggleMute, playSfxCorrect, playSfxWrong } = useAudioManager();
   const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
   const [drawerTab, setDrawerTab] = useState<"player" | "host">("player");
 
@@ -768,6 +769,13 @@ export default function App() {
     const isAnswerCorrect = key === activeQuestionData.correctKey || isCorrect;
     const earnedPoints = isAnswerCorrect ? 850 + streak * 50 : 0;
 
+    // Trigger instant SFX
+    if (isAnswerCorrect) {
+      playSfxCorrect();
+    } else {
+      playSfxWrong();
+    }
+
     // Immediately record user answer state so AnswerFeedback displays accurately
     setLastAnswer({ key, isCorrect: isAnswerCorrect, earnedPoints });
 
@@ -884,7 +892,7 @@ export default function App() {
             {/* Audio Mute Toggle */}
             <button
               type="button"
-              onClick={() => setIsMuted(!isMuted)}
+              onClick={toggleMute}
               className="w-8 h-8 rounded-xl border-2 border-tinta bg-kertas hover:bg-kraft/50 text-tinta flex items-center justify-center transition-all btn-pressable shadow-xs"
               title={isMuted ? "Aktifkan Suara" : "Bisukan Suara"}
             >
@@ -1041,7 +1049,7 @@ export default function App() {
                   onAnswer={handleAnswerSubmit}
                   lang={lang}
                   isMuted={isMuted}
-                  onToggleMute={() => setIsMuted(!isMuted)}
+                  onToggleMute={toggleMute}
                   onToggleLang={toggleLanguage}
                 />
               )
