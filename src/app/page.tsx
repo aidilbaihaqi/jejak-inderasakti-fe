@@ -25,6 +25,7 @@ import {
   Jenjang,
 } from "@/lib/api";
 import { useGameSocket } from "@/hooks/useGameSocket";
+import { WsRanking } from "@/lib/socket";
 import {
   getQuestionsForStage,
   findQuestionByPrompt,
@@ -284,7 +285,9 @@ export default function App() {
       hostToken &&
         selectedRoomId &&
         !selectedRoomId.startsWith("room-") &&
-        (currentStep === "host-lobby" || currentStep === "host-monitor")
+        (currentStep === "host-lobby" ||
+          currentStep === "host-monitor" ||
+          currentStep === "host-hasil-ekspor")
     ),
     onRoomEnded: () => {
       setCurrentStep("host-hasil-ekspor");
@@ -471,11 +474,58 @@ export default function App() {
     return Array.from(listMap.values());
   }, [playerName, avatarId, playerSocket.roomState?.players, playerSocket.joinedPlayers, pin, localRoomPlayers]);
 
+  // Cache the latest rankings so they are never lost when changing steps or ending room
+  const [latestRankings, setLatestRankings] = useState<WsRanking[]>([]);
+  useEffect(() => {
+    if (hostSocket.rankings && hostSocket.rankings.length > 0) {
+      setLatestRankings(hostSocket.rankings);
+    }
+  }, [hostSocket.rankings]);
+
+  // Sync playerCount in hostRooms whenever players join
+  useEffect(() => {
+    setHostRooms((prev) => {
+      let changed = false;
+      const updated = prev.map((r) => {
+        const pin = r.pin?.trim();
+        const localCount = pin && localRoomPlayers[pin] ? localRoomPlayers[pin].length : 0;
+        const hostCount = r.id === selectedRoomId ? mappedHostPlayers.length : 0;
+        const targetCount = Math.max(r.playerCount || 0, localCount, hostCount);
+        if (targetCount !== r.playerCount) {
+          changed = true;
+          return { ...r, playerCount: targetCount };
+        }
+        return r;
+      });
+      return changed ? updated : prev;
+    });
+  }, [localRoomPlayers, selectedRoomId, mappedHostPlayers.length]);
+
+  // Enriched host rooms with dynamic live player count
+  const enrichedHostRooms = useMemo(() => {
+    return hostRooms.map((r) => {
+      const pin = r.pin?.trim();
+      const localCount = pin && localRoomPlayers[pin] ? localRoomPlayers[pin].length : 0;
+      const isSelected = r.id === selectedRoomId;
+      const hostCount = isSelected ? mappedHostPlayers.length : 0;
+      const targetCount = Math.max(r.playerCount || 0, localCount, hostCount);
+      return {
+        ...r,
+        playerCount: targetCount,
+      };
+    });
+  }, [hostRooms, localRoomPlayers, selectedRoomId, mappedHostPlayers.length]);
+
   // Map podium results from live WS rankings (with correct_count) or podium (top-3 only)
   const mappedPodiumResults = useMemo(() => {
+    const effectiveRankings =
+      hostSocket.rankings && hostSocket.rankings.length > 0
+        ? hostSocket.rankings
+        : latestRankings;
+
     // 1. Live WebSocket rankings from lb.update — has ALL players + correct_count
-    if (hostSocket.rankings && hostSocket.rankings.length > 0) {
-      return hostSocket.rankings.map((r, idx) => ({
+    if (effectiveRankings && effectiveRankings.length > 0) {
+      return effectiveRankings.map((r, idx) => ({
         rank: r.rank || idx + 1,
         name: r.nickname,
         school: r.school || "Umum",
@@ -503,20 +553,31 @@ export default function App() {
 
     // 3. Fallback to real joined players from current session
     if (mappedHostPlayers && mappedHostPlayers.length > 0) {
-      return mappedHostPlayers.map((p, idx) => ({
-        rank: idx + 1,
-        name: p.name,
-        school: p.school || "Umum",
-        avatarId: p.avatarId || "1",
-        score: 0,
-        correctAnswers: 0,
-        totalQuestions: 15,
-        timeTaken: "-",
-      }));
+      return mappedHostPlayers.map((p, idx) => {
+        const isSelf = p.name === playerName;
+        return {
+          rank: idx + 1,
+          name: p.name,
+          school: p.school || "Umum",
+          avatarId: p.avatarId || "1",
+          score: isSelf ? (playerScore || 0) : 0,
+          correctAnswers: isSelf ? (playerCorrectCount || 0) : 0,
+          totalQuestions: 15,
+          timeTaken: "-",
+        };
+      });
     }
 
     return [];
-  }, [hostSocket.podium, hostSocket.rankings, mappedHostPlayers]);
+  }, [
+    hostSocket.podium,
+    hostSocket.rankings,
+    latestRankings,
+    mappedHostPlayers,
+    playerName,
+    playerScore,
+    playerCorrectCount,
+  ]);
 
   const handleSelectRoom = (room: HostRoom, action: "lobby" | "monitor" | "podium") => {
     setSelectedRoomId(room.id);
@@ -1111,7 +1172,7 @@ export default function App() {
 
             {currentStep === "host-buat-room" && (
               <CreateRoom
-                rooms={hostRooms}
+                rooms={enrichedHostRooms}
                 onSelectRoom={handleSelectRoom}
                 onCreateRoom={handleCreateHostRoom}
                 onDeleteRoom={handleDeleteHostRoom}
