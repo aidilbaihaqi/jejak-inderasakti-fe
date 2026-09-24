@@ -14,6 +14,8 @@ export interface WsOption {
 }
 
 export interface WsQuestionShow {
+  id?: string;
+  question_id?: string;
   index: number;
   total: number;
   site: number;

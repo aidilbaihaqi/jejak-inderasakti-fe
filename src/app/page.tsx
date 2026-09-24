@@ -46,6 +46,10 @@ import {
   Users,
   School,
   FileText,
+  Lock,
+  LogOut,
+  ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
 
 export type ScreenKey =
@@ -73,6 +77,7 @@ export default function App() {
   const [lang, setLang] = useState<"id" | "en">("id");
   const [isMuted, setIsMuted] = useState(false);
   const [isNavDrawerOpen, setIsNavDrawerOpen] = useState(false);
+  const [drawerTab, setDrawerTab] = useState<"player" | "host">("player");
 
   // Player State
   const [pin, setPin] = useState("");
@@ -89,6 +94,7 @@ export default function App() {
   const [stageQuestionIndex, setStageQuestionIndex] = useState(0);
   const [playerScore, setPlayerScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [playerCorrectCount, setPlayerCorrectCount] = useState(0);
   const [lastAnswer, setLastAnswer] = useState<{
     key: "A" | "B" | "C" | "D";
     isCorrect: boolean;
@@ -169,6 +175,13 @@ export default function App() {
     } catch (e) {}
   }, [hostToken]);
 
+  // Guard host routes: unauthenticated users cannot access host management/monitor screens
+  useEffect(() => {
+    if (currentStep.startsWith("host-") && currentStep !== "host-login" && !hostToken) {
+      setCurrentStep("host-login");
+    }
+  }, [currentStep, hostToken]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -242,6 +255,27 @@ export default function App() {
     },
   });
 
+  // Track player's correct answer count from live q.result events
+  useEffect(() => {
+    if (playerSocket.lastResult && playerSocket.lastResult.correct) {
+      setPlayerCorrectCount((prev) => prev + 1);
+    }
+  }, [playerSocket.lastResult]);
+
+  // Automatically sync stage from live WebSocket question
+  useEffect(() => {
+    if (playerSocket.activeQuestion?.site) {
+      setCurrentStage(playerSocket.activeQuestion.site);
+    }
+  }, [playerSocket.activeQuestion?.site]);
+
+  // If in quiz step but no question is served yet, trigger sendNext
+  useEffect(() => {
+    if (currentStep === "kuis-soal" && playerToken && !playerSocket.activeQuestion) {
+      playerSocket.sendNext();
+    }
+  }, [currentStep, playerToken, playerSocket.activeQuestion, playerSocket.sendNext]);
+
   // Realtime Host WebSocket
   const hostSocket = useGameSocket({
     token: hostToken,
@@ -278,24 +312,49 @@ export default function App() {
   const activeQuestionData: QuestionData = useMemo(() => {
     if (playerToken && playerSocket.activeQuestion) {
       const q = playerSocket.activeQuestion;
-      const rawMatch = findQuestionByPrompt(q.prompt);
+      const optionLabels = q.options.map((o) => o.label);
+      const rawMatch = findQuestionByPrompt(q.prompt, q.site, optionLabels);
       const optionKeys: ("A" | "B" | "C" | "D")[] = ["A", "B", "C", "D"];
+
+      // Determine correct option
+      let correctKey: "A" | "B" | "C" | "D" = "A";
+      const revealedOptId = playerSocket.lastResult?.correct_option_id;
+      const dbCorrectOpt = rawMatch?.options.find((o) => o.correct);
+      const targetOptId = revealedOptId || dbCorrectOpt?.id;
+
+      const options = q.options.map((opt, i) => {
+        const key = optionKeys[i] || "A";
+        if (targetOptId && opt.id === targetOptId) {
+          correctKey = key;
+        } else if (!targetOptId && dbCorrectOpt && dbCorrectOpt.label.id.trim() === opt.label.trim()) {
+          correctKey = key;
+        }
+        return {
+          key,
+          textId: opt.label,
+          textEn: rawMatch?.options.find((ro) => ro.id === opt.id)?.label.en || opt.label,
+          optionId: opt.id,
+        };
+      });
+
+      const resolvedSite = q.site || rawMatch?.site || currentStage || 1;
+      const resolvedId =
+        q.id ||
+        q.question_id ||
+        rawMatch?.id ||
+        `M${resolvedSite}-${String((q.index % 3) + 1).padStart(2, "0")}`;
+
       return {
-        id: rawMatch?.id || `live-${q.index}`,
-        stageId: q.site || currentStage,
+        id: resolvedId,
+        stageId: resolvedSite,
         questionNumber: q.index + 1,
         totalQuestions: q.total || 15,
         textId: q.prompt,
         textEn: rawMatch?.prompt.en || q.prompt,
-        options: q.options.map((opt, i) => ({
-          key: optionKeys[i] || "A",
-          textId: opt.label,
-          textEn: rawMatch?.options.find((ro) => ro.id === opt.id)?.label.en || opt.label,
-          optionId: opt.id,
-        })),
-        correctKey: "A",
-        explanationId: rawMatch?.explanation.id || "",
-        explanationEn: rawMatch?.explanation.en || "",
+        options,
+        correctKey,
+        explanationId: playerSocket.lastResult?.explanation || rawMatch?.explanation.id || "",
+        explanationEn: rawMatch?.explanation.en || playerSocket.lastResult?.explanation || "",
       };
     }
     const stageQuestions = getQuestionsForStage(
@@ -303,7 +362,14 @@ export default function App() {
       gradeLevel === "UMUM" ? "SD" : gradeLevel
     );
     return stageQuestions[stageQuestionIndex] || stageQuestions[0];
-  }, [playerToken, playerSocket.activeQuestion, currentStage, stageQuestionIndex, gradeLevel]);
+  }, [
+    playerToken,
+    playerSocket.activeQuestion,
+    playerSocket.lastResult,
+    currentStage,
+    stageQuestionIndex,
+    gradeLevel,
+  ]);
 
   // Map joined players for host screen (merges WS live events, WS room state snapshot, and localRoomPlayers)
   const mappedHostPlayers = useMemo(() => {
@@ -405,23 +471,9 @@ export default function App() {
     return Array.from(listMap.values());
   }, [playerName, avatarId, playerSocket.roomState?.players, playerSocket.joinedPlayers, pin, localRoomPlayers]);
 
-  // Map podium results from live WS podium, WS rankings, or real joined players (like Okta)
+  // Map podium results from live WS rankings (with correct_count) or podium (top-3 only)
   const mappedPodiumResults = useMemo(() => {
-    // 1. Live WebSocket podium from room.ended
-    if (hostSocket.podium && hostSocket.podium.length > 0) {
-      return hostSocket.podium.map((p, idx) => ({
-        rank: p.rank || idx + 1,
-        name: p.nickname,
-        school: mappedHostPlayers.find((mp) => mp.name === p.nickname)?.school || "Umum",
-        avatarId: String(p.avatar || 1),
-        score: p.score || 0,
-        correctAnswers: 15,
-        totalQuestions: 15,
-        timeTaken: "-",
-      }));
-    }
-
-    // 2. Live WebSocket rankings from lb.update
+    // 1. Live WebSocket rankings from lb.update — has ALL players + correct_count
     if (hostSocket.rankings && hostSocket.rankings.length > 0) {
       return hostSocket.rankings.map((r, idx) => ({
         rank: r.rank || idx + 1,
@@ -430,6 +482,20 @@ export default function App() {
         avatarId: mappedHostPlayers.find((mp) => mp.name === r.nickname)?.avatarId || "1",
         score: r.score || 0,
         correctAnswers: r.correct_count || 0,
+        totalQuestions: 15,
+        timeTaken: "-",
+      }));
+    }
+
+    // 2. Podium from room.ended — only top-3, no correct_count; use as fallback
+    if (hostSocket.podium && hostSocket.podium.length > 0) {
+      return hostSocket.podium.map((p, idx) => ({
+        rank: p.rank || idx + 1,
+        name: p.nickname,
+        school: mappedHostPlayers.find((mp) => mp.name === p.nickname)?.school || "Umum",
+        avatarId: String(p.avatar || 1),
+        score: p.score || 0,
+        correctAnswers: 0,
         totalQuestions: 15,
         timeTaken: "-",
       }));
@@ -637,36 +703,51 @@ export default function App() {
     isCorrect: boolean,
     optionId?: string
   ) => {
-    if (playerToken && playerSocket) {
-      let qId = playerSocket.activeQuestion?.prompt
-        ? findQuestionByPrompt(playerSocket.activeQuestion.prompt)?.id
-        : undefined;
-      if (!qId && playerSocket.activeQuestion) {
-        qId = `M${playerSocket.activeQuestion.site}-${String(playerSocket.activeQuestion.index + 1).padStart(2, "0")}`;
-      }
-      playerSocket.sendAnswer(
-        qId || "M1-01",
-        optionId || null
-      );
-      setCurrentStep("hasil-jawaban");
+    // Determine correctness accurately from activeQuestionData
+    const isAnswerCorrect = key === activeQuestionData.correctKey || isCorrect;
+    const earnedPoints = isAnswerCorrect ? 850 + streak * 50 : 0;
+
+    // Immediately record user answer state so AnswerFeedback displays accurately
+    setLastAnswer({ key, isCorrect: isAnswerCorrect, earnedPoints });
+
+    if (isAnswerCorrect) {
+      setPlayerScore((prev) => prev + earnedPoints);
+      setStreak((prev) => prev + 1);
     } else {
-      const points = isCorrect ? 850 + streak * 50 : 0;
-      setLastAnswer({ key, isCorrect, earnedPoints: points });
-      if (isCorrect) {
-        setPlayerScore((prev) => prev + points);
-        setStreak((prev) => prev + 1);
-      } else {
-        setStreak(0);
-      }
-      setCurrentStep("hasil-jawaban");
+      setStreak(0);
     }
+
+    if (playerToken && playerSocket) {
+      const q = playerSocket.activeQuestion;
+      const optionLabels = q?.options.map((o) => o.label);
+      const rawMatch = q?.prompt ? findQuestionByPrompt(q.prompt, q.site, optionLabels) : undefined;
+      const qId = q?.id || q?.question_id || rawMatch?.id || activeQuestionData.id;
+
+      playerSocket.sendAnswer(qId, optionId || null);
+    }
+
+    setCurrentStep("hasil-jawaban");
   };
 
   const handleAnswerNext = () => {
+    const totalQ = activeQuestionData.totalQuestions || 15;
+    const qNum = activeQuestionData.questionNumber;
+    const questionsPerStage = totalQ === 10 ? 2 : 3;
+    const isEndOfStage = qNum % questionsPerStage === 0 || qNum >= totalQ;
+    const isFinished = qNum >= totalQ || Boolean(playerSocket.lastResult?.finished);
+
     if (playerToken && playerSocket) {
-      if (playerSocket.lastResult?.finished) {
-        setCurrentStep("podium-juara");
+      if (isFinished) {
+        if (currentStage >= 5) {
+          setCurrentStep("kartu-warisan");
+        } else {
+          setCurrentStep("podium-juara");
+        }
+      } else if (isEndOfStage) {
+        // Completed this stage's questions -> show heritage summary card
+        setCurrentStep("kartu-warisan");
       } else {
+        // Next question within same stage -> request next question and stay in quiz
         playerSocket.sendNext();
         setCurrentStep("kuis-soal");
       }
@@ -785,7 +866,10 @@ export default function App() {
             {/* Menu Drawer Toggle */}
             <button
               type="button"
-              onClick={() => setIsNavDrawerOpen(true)}
+              onClick={() => {
+                setDrawerTab(isHostView ? "host" : "player");
+                setIsNavDrawerOpen(true);
+              }}
               className="w-8 h-8 rounded-xl border-2 border-tinta bg-kertas hover:bg-kraft/50 text-tinta flex items-center justify-center transition-all btn-pressable shadow-xs ml-0.5"
               title="Menu Navigasi Lengkap"
             >
@@ -865,22 +949,41 @@ export default function App() {
             {currentStep === "info-situs" && (
               <SiteIntroCard
                 stageId={currentStage}
-                onStartQuiz={() => setCurrentStep("kuis-soal")}
+                onStartQuiz={() => {
+                  if (playerToken && playerSocket) {
+                    if (!playerSocket.activeQuestion || playerSocket.activeQuestion.site !== currentStage) {
+                      playerSocket.sendNext();
+                    }
+                  }
+                  setCurrentStep("kuis-soal");
+                }}
                 lang={lang}
               />
             )}
 
             {currentStep === "kuis-soal" && (
-              <QuizQuestion
-                question={activeQuestionData}
-                score={playerToken && playerSocket.roomState ? playerSocket.roomState.score : playerScore}
-                streak={streak}
-                onAnswer={handleAnswerSubmit}
-                lang={lang}
-                isMuted={isMuted}
-                onToggleMute={() => setIsMuted(!isMuted)}
-                onToggleLang={toggleLanguage}
-              />
+              playerToken && !playerSocket.activeQuestion ? (
+                <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center h-full p-6 text-center animate-fade-in">
+                  <div className="w-14 h-14 rounded-full border-4 border-emas border-t-transparent animate-spin mb-4" />
+                  <h3 className="font-display font-black text-xl text-tinta mb-1">
+                    {lang === "id" ? "Menyiapkan Soal Budaya..." : "Loading Cultural Question..."}
+                  </h3>
+                  <p className="font-body text-xs text-coklat font-semibold">
+                    {lang === "id" ? `Situs #${currentStage} dari 5` : `Site #${currentStage} of 5`}
+                  </p>
+                </div>
+              ) : (
+                <QuizQuestion
+                  question={activeQuestionData}
+                  score={playerToken && playerSocket.roomState ? playerSocket.roomState.score : playerScore}
+                  streak={streak}
+                  onAnswer={handleAnswerSubmit}
+                  lang={lang}
+                  isMuted={isMuted}
+                  onToggleMute={() => setIsMuted(!isMuted)}
+                  onToggleLang={toggleLanguage}
+                />
+              )
             )}
 
             {currentStep === "hasil-jawaban" && (
@@ -921,38 +1024,80 @@ export default function App() {
               <StageSummary
                 stageId={currentStage}
                 stageScore={lastAnswer.earnedPoints || 1750}
-                totalScore={playerScore}
-                currentRank={3}
-                totalPlayers={8}
+                totalScore={playerToken && playerSocket.roomState ? playerSocket.roomState.score : playerScore}
+                currentRank={
+                  playerSocket.rankings?.find((r) => r.nickname === playerName)?.rank || 1
+                }
+                totalPlayers={playerSocket.rankings?.length || 1}
                 onNextStage={handleNextStage}
                 lang={lang}
               />
             )}
 
-            {currentStep === "podium-juara" && (
-              <FinalPodium
-                playerName={playerName}
-                playerRank={1}
-                totalPlayers={8}
-                playerScore={playerScore}
-                correctCount={14}
-                totalQuestions={15}
-                onFinish={() => {
-                  setCurrentStage(1);
-                  setStageQuestionIndex(0);
-                  setPlayerScore(0);
-                  setStreak(0);
-                  setPin("");
-                  setPlayerToken(null);
-                  setCurrentStep("pilih-bahasa");
-                }}
-                lang={lang}
-              />
-            )}
+            {currentStep === "podium-juara" && (() => {
+              // Derive player's rank from rankings
+              const myRank = playerSocket.rankings?.find(
+                (r) => r.nickname === playerName
+              )?.rank || 1;
+              const totalP = playerSocket.rankings?.length || 1;
+
+              // Build top-3 from podium (room.ended) or rankings (lb.update)
+              const top3: { rank: 1 | 2 | 3; name: string; avatarId: string; score: number }[] = [];
+              if (playerSocket.podium && playerSocket.podium.length > 0) {
+                playerSocket.podium.slice(0, 3).forEach((p) => {
+                  top3.push({
+                    rank: p.rank as 1 | 2 | 3,
+                    name: p.nickname,
+                    avatarId: String(p.avatar || 1),
+                    score: p.score || 0,
+                  });
+                });
+              } else if (playerSocket.rankings && playerSocket.rankings.length > 0) {
+                playerSocket.rankings.slice(0, 3).forEach((r, idx) => {
+                  top3.push({
+                    rank: (idx + 1) as 1 | 2 | 3,
+                    name: r.nickname,
+                    avatarId: "1",
+                    score: r.score || 0,
+                  });
+                });
+              }
+
+              // Use live score from roomState if available
+              const liveScore = playerSocket.roomState?.score ?? playerScore;
+
+              // Correct count: from rankings (server-side) or locally tracked
+              const liveCorrect = playerSocket.rankings?.find(
+                (r) => r.nickname === playerName
+              )?.correct_count ?? playerCorrectCount;
+
+              return (
+                <FinalPodium
+                  playerName={playerName}
+                  playerRank={myRank}
+                  totalPlayers={totalP}
+                  playerScore={liveScore}
+                  correctCount={liveCorrect}
+                  totalQuestions={playerSocket.activeQuestion?.total || 15}
+                  topPlayers={top3.length > 0 ? top3 : undefined}
+                  onFinish={() => {
+                    setCurrentStage(1);
+                    setStageQuestionIndex(0);
+                    setPlayerScore(0);
+                    setStreak(0);
+                    setPlayerCorrectCount(0);
+                    setPin("");
+                    setPlayerToken(null);
+                    setCurrentStep("pilih-bahasa");
+                  }}
+                  lang={lang}
+                />
+              );
+            })()}
           </div>
         ) : (
           /* Host Projector Views */
-          <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col min-h-0 overflow-y-auto p-3 sm:p-4">
+          <div className="w-full max-w-6xl mx-auto flex-1 flex flex-col min-h-0 overflow-y-auto p-1 sm:p-4">
             {currentStep === "host-login" && (
               <HostLogin
                 onLoginSuccess={(email, token) => {
@@ -1028,14 +1173,17 @@ export default function App() {
       {/* ========================================================
           CLEAN SLIDE-OVER MOBILE MENU DRAWER
       ======================================================== */}
+      {/* ========================================================
+          CLEAN SLIDE-OVER MOBILE MENU DRAWER (ROLE-BASED & PROTECTED)
+      ======================================================== */}
       {isNavDrawerOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-fade-in">
           <div
-            className="w-full max-w-xs sm:max-w-sm h-full bg-kertas border-l-3 border-tinta shadow-2xl p-5 flex flex-col justify-between overflow-y-auto"
+            className="w-full max-w-xs sm:max-w-sm h-full bg-kertas border-l-3 border-tinta shadow-2xl p-4 sm:p-5 flex flex-col justify-between overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Drawer Header */}
             <div>
+              {/* Drawer Header */}
               <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-kraft mb-4">
                 <div className="flex items-center gap-2">
                   <Compass className="w-5 h-5 text-emas" />
@@ -1046,141 +1194,286 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setIsNavDrawerOpen(false)}
-                  className="w-8 h-8 rounded-full bg-kertas-putih border border-tinta flex items-center justify-center text-tinta hover:bg-kraft"
+                  className="w-8 h-8 rounded-full bg-kertas-putih border border-tinta flex items-center justify-center text-tinta hover:bg-kraft transition-all"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Mode Selection
-              <div className="mb-5">
-                <span className="font-label text-[11px] font-bold text-coklat block mb-2 uppercase tracking-wider">
-                  Beralih Mode
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentStep("pilih-bahasa");
-                      setIsNavDrawerOpen(false);
-                    }}
-                    className={`p-2.5 rounded-xl border-2 border-tinta font-display font-extrabold text-xs flex items-center justify-center gap-1.5 btn-pressable ${
-                      !isHostView
-                        ? "bg-kuning text-tinta shadow-stiker-sm"
-                        : "bg-kertas-putih text-coklat"
-                    }`}
-                  >
-                    <Gamepad2 className="w-4 h-4" />
-                    <span>Kuis Siswa</span>
-                  </button>
+              {/* Mode Switcher Tabs */}
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-kraft/60 rounded-2xl border-2 border-tinta mb-4">
+                <button
+                  type="button"
+                  onClick={() => setDrawerTab("player")}
+                  className={`py-2 px-2.5 rounded-xl font-display font-black text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    drawerTab === "player"
+                      ? "bg-kuning text-tinta shadow-stiker-sm border border-tinta"
+                      : "text-coklat hover:text-tinta"
+                  }`}
+                >
+                  <Gamepad2 className="w-3.5 h-3.5" />
+                  <span>Kuis Siswa</span>
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentStep("host-login");
-                      setIsNavDrawerOpen(false);
-                    }}
-                    className={`p-2.5 rounded-xl border-2 border-tinta font-display font-extrabold text-xs flex items-center justify-center gap-1.5 btn-pressable ${
-                      isHostView
-                        ? "bg-kuning text-tinta shadow-stiker-sm"
-                        : "bg-kertas-putih text-coklat"
-                    }`}
-                  >
-                    <KeyRound className="w-4 h-4" />
-                    <span>Panel Host</span>
-                  </button>
-                </div>
-              </div> */}
+                <button
+                  type="button"
+                  onClick={() => setDrawerTab("host")}
+                  className={`py-2 px-2.5 rounded-xl font-display font-black text-xs flex items-center justify-center gap-1.5 transition-all ${
+                    drawerTab === "host"
+                      ? "bg-kuning text-tinta shadow-stiker-sm border border-tinta"
+                      : "text-coklat hover:text-tinta"
+                  }`}
+                >
+                  <KeyRound className="w-3.5 h-3.5" />
+                  <span>Panel Guru</span>
+                  {hostToken && (
+                    <span className="w-2 h-2 rounded-full bg-benar" />
+                  )}
+                </button>
+              </div>
 
-              {/* Player Screen Directory with Clear Names (No P1-P10) */}
-              <div className="mb-4">
-                <span className="font-label text-[11px] font-bold text-coklat block mb-2 uppercase tracking-wider">
-                  Alur Kuis Siswa
-                </span>
-                <div className="space-y-1.5">
-                  {(
-                    [
-                      { id: "pilih-bahasa", label: "Pilih Bahasa", icon: Globe },
-                      { id: "masukkan-pin", label: "Masukkan PIN Room", icon: KeyRound },
-                      { id: "daftar-peserta", label: "Pendaftaran Profil", icon: Users },
-                      { id: "ruang-tunggu", label: "Ruang Tunggu (Lobby)", icon: Sparkles },
-                      { id: "peta-jelajah", label: "Peta Pulau Penyengat", icon: MapPin },
-                      { id: "info-situs", label: "Sekilas Sejarah Situs", icon: FileText },
-                      { id: "kuis-soal", label: "Kuis Soal Budaya", icon: CheckCircle2 },
-                      { id: "hasil-jawaban", label: "Umpan Balik Jawaban", icon: Sparkles },
-                      { id: "kartu-warisan", label: "Kartu Warisan Budaya", icon: School },
-                      { id: "podium-juara", label: "Panggung Juara (Podium)", icon: Trophy },
-                    ] as const
-                  ).map((item, idx) => {
-                    const Icon = item.icon;
-                    const isActive = currentStep === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => {
-                          setCurrentStep(item.id);
-                          setIsNavDrawerOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 rounded-xl border text-left font-body font-bold text-xs flex items-center justify-between transition-all ${
-                          isActive
-                            ? "bg-kuning border-tinta text-tinta shadow-stiker-sm"
-                            : "bg-kertas-putih border-tinta/30 text-coklat hover:bg-kraft"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-5 h-5 rounded-md bg-kraft/70 border border-tinta/30 flex items-center justify-center font-label text-[10px] font-bold text-tinta">
-                            {idx + 1}
+              {/* TAB 1: KUIS SISWA */}
+              {drawerTab === "player" && (
+                <div className="space-y-3">
+                  <span className="font-label text-[11px] font-bold text-coklat block uppercase tracking-wider">
+                    Navigasi Peserta
+                  </span>
+
+                  <div className="space-y-1.5">
+                    {/* Beranda / Mulai */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentStep("pilih-bahasa");
+                        setIsNavDrawerOpen(false);
+                      }}
+                      className={`w-full px-3 py-2.5 rounded-xl border text-left font-body font-bold text-xs flex items-center justify-between transition-all ${
+                        currentStep === "pilih-bahasa"
+                          ? "bg-kuning border-tinta text-tinta shadow-stiker-sm"
+                          : "bg-kertas-putih border-tinta/30 text-coklat hover:bg-kraft"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-tinta" />
+                        <span>Pilih Bahasa & Mulai</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCurrentStep("masukkan-pin");
+                        setIsNavDrawerOpen(false);
+                      }}
+                      className={`w-full px-3 py-2.5 rounded-xl border text-left font-body font-bold text-xs flex items-center justify-between transition-all ${
+                        currentStep === "masukkan-pin"
+                          ? "bg-kuning border-tinta text-tinta shadow-stiker-sm"
+                          : "bg-kertas-putih border-tinta/30 text-coklat hover:bg-kraft"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <KeyRound className="w-4 h-4 text-tinta" />
+                        <span>Masukkan PIN Room</span>
+                      </div>
+                    </button>
+
+                    {/* Jika sedang dalam permainan */}
+                    {(playerToken || pin) && (
+                      <div className="pt-2 mt-2 border-t border-dashed border-kraft space-y-1.5">
+                        <div className="p-2.5 bg-kuning/30 rounded-xl border border-tinta/40">
+                          <span className="font-label text-[10px] font-bold text-coklat block mb-0.5">
+                            STATUS SESI BERJALAN
                           </span>
-                          <span>{item.label}</span>
+                          <span className="font-display font-black text-xs text-tinta block">
+                            PIN: {pin || "---"} • {playerName || "Peserta"}
+                          </span>
                         </div>
-                        <Icon className="w-3.5 h-3.5 text-tinta/60" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
 
-              {/* Host Screen Directory with Clear Names (No H1-H5) */}
-              <div className="mb-4">
-                <span className="font-label text-[11px] font-bold text-coklat block mb-2 uppercase tracking-wider">
-                  Panel Guru & Host
-                </span>
-                <div className="space-y-1.5">
-                  {(
-                    [
-                      { id: "host-login", label: "Masuk Akun Guru" },
-                      {
-                        id: "host-buat-room",
-                        label: `Manajemen Ruangan (${hostRooms.length}/5)`,
-                      },
-                      { id: "host-lobby", label: "Ruang Tunggu Proyektor" },
-                      { id: "host-monitor", label: "Pemantauan Langsung" },
-                      { id: "host-hasil-ekspor", label: "Hasil Akhir & Unduh CSV" },
-                    ] as { id: ScreenKey; label: string }[]
-                  ).map((item) => {
-                    const isActive = currentStep === item.id;
-                    return (
+                        <button
+                          type="button"
+                          onClick={() => setIsNavDrawerOpen(false)}
+                          className="w-full px-3 py-2.5 rounded-xl border-2 border-tinta bg-kuning text-tinta font-display font-black text-xs flex items-center justify-between shadow-stiker-sm"
+                        >
+                          <span>Lanjutkan Sesi Kuis</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm("Yakin ingin keluar dari sesi kuis saat ini?")) {
+                              setPin("");
+                              setPlayerToken(null);
+                              setPlayerName("");
+                              setPlayerScore(0);
+                              setStreak(0);
+                              setCurrentStage(1);
+                              setStageQuestionIndex(0);
+                              setCurrentStep("pilih-bahasa");
+                              setIsNavDrawerOpen(false);
+                            }
+                          }}
+                          className="w-full px-3 py-2 rounded-xl border border-salah/40 text-salah hover:bg-salah/10 font-body font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Keluar dari Sesi Kuis</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Informational sites list */}
+                  <div className="pt-3 border-t border-dashed border-kraft">
+                    <span className="font-label text-[10px] font-bold text-coklat uppercase tracking-wider block mb-1.5">
+                      5 Situs Warisan Pulau Penyengat
+                    </span>
+                    <div className="space-y-1">
+                      {[
+                        "1. Masjid Raya Sultan Riau",
+                        "2. Makam Engku Putri & Raja Ali Haji",
+                        "3. Istana Kantor",
+                        "4. Gedung Tabib",
+                        "5. Perigi Puteri",
+                      ].map((siteName, idx) => (
+                        <div
+                          key={idx}
+                          className="text-[11px] font-body text-coklat flex items-center gap-1.5 py-0.5"
+                        >
+                          <MapPin className="w-3 h-3 text-emas flex-shrink-0" />
+                          <span className="truncate">{siteName}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: PANEL GURU & HOST */}
+              {drawerTab === "host" && (
+                <div className="space-y-3">
+                  <span className="font-label text-[11px] font-bold text-coklat block uppercase tracking-wider">
+                    Panel Guru & Host
+                  </span>
+
+                  {!hostToken ? (
+                    /* JIKA BELUM LOGIN: DIBATASI & TERKUNCI */
+                    <div className="space-y-2.5">
+                      <div className="p-3 bg-kraft/40 rounded-xl border-2 border-dashed border-tinta/40 text-center">
+                        <div className="w-8 h-8 rounded-full bg-kertas-putih border border-tinta mx-auto flex items-center justify-center mb-1.5 text-coklat">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <h4 className="font-display font-black text-xs text-tinta mb-1">
+                          Akses Terbatas
+                        </h4>
+                        <p className="font-body text-[11px] text-coklat leading-relaxed">
+                          Panel Host memerlukan autentikasi guru untuk membuat ruangan, mengontrol proyektor, dan memantau kuis.
+                        </p>
+                      </div>
+
                       <button
-                        key={item.id}
                         type="button"
                         onClick={() => {
-                          setCurrentStep(item.id);
+                          setCurrentStep("host-login");
                           setIsNavDrawerOpen(false);
                         }}
-                        className={`w-full px-3 py-2 rounded-xl border text-left font-body font-bold text-xs flex items-center justify-between transition-all ${
-                          isActive
-                            ? "bg-kuning border-tinta text-tinta shadow-stiker-sm"
-                            : "bg-kertas-putih border-tinta/30 text-coklat hover:bg-kraft"
-                        }`}
+                        className="w-full py-2.5 px-3 rounded-xl bg-kuning border-2 border-tinta font-display font-black text-xs text-tinta shadow-stiker-sm flex items-center justify-center gap-2 hover:bg-[#FFD147] transition-all"
                       >
-                        <span>{item.label}</span>
-                        <KeyRound className="w-3.5 h-3.5 text-tinta/60" />
+                        <KeyRound className="w-4 h-4" />
+                        <span>Masuk Akun Guru</span>
                       </button>
-                    );
-                  })}
+
+                      {/* Locked host features preview */}
+                      <div className="space-y-1.5 opacity-50 select-none">
+                        {[
+                          "Manajemen Ruangan",
+                          "Ruang Tunggu Proyektor",
+                          "Pemantauan Langsung",
+                          "Hasil Akhir & Unduh CSV",
+                        ].map((label, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              setCurrentStep("host-login");
+                              setIsNavDrawerOpen(false);
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-tinta/30 bg-kraft/30 text-coklat font-body font-bold text-xs flex items-center justify-between cursor-not-allowed"
+                            title="Perlu login sebagai Host"
+                          >
+                            <span>{label}</span>
+                            <Lock className="w-3.5 h-3.5 text-coklat/60" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    /* JIKA SUDAH LOGIN: AKSES DIIZINKAN */
+                    <div className="space-y-2">
+                      <div className="p-2.5 bg-benar/10 rounded-xl border border-benar/40 flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-benar flex-shrink-0" />
+                        <div className="min-w-0">
+                          <span className="font-label text-[9px] font-bold text-benar uppercase block leading-none">
+                            Host Terautentikasi
+                          </span>
+                          <span className="font-display font-bold text-xs text-tinta truncate block mt-0.5">
+                            {hostEmail}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        {[
+                          { id: "host-buat-room", label: `Manajemen Ruangan (${hostRooms.length}/5)` },
+                          { id: "host-lobby", label: "Ruang Tunggu Proyektor" },
+                          { id: "host-monitor", label: "Pemantauan Langsung" },
+                          { id: "host-hasil-ekspor", label: "Hasil Akhir & Unduh CSV" },
+                        ].map((item) => {
+                          const isActive = currentStep === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                setCurrentStep(item.id as ScreenKey);
+                                setIsNavDrawerOpen(false);
+                              }}
+                              className={`w-full px-3 py-2.5 rounded-xl border text-left font-body font-bold text-xs flex items-center justify-between transition-all ${
+                                isActive
+                                  ? "bg-kuning border-tinta text-tinta shadow-stiker-sm"
+                                  : "bg-kertas-putih border-tinta/30 text-coklat hover:bg-kraft"
+                              }`}
+                            >
+                              <span>{item.label}</span>
+                              <KeyRound className="w-3.5 h-3.5 text-tinta/60" />
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="pt-2 border-t border-dashed border-kraft">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setHostToken(null);
+                            setSelectedRoomId("");
+                            if (typeof window !== "undefined") {
+                              localStorage.removeItem("ji_host_token");
+                              localStorage.removeItem("ji_host_selected_room");
+                              localStorage.setItem("ji_current_step", "host-login");
+                            }
+                            setCurrentStep("host-login");
+                            setIsNavDrawerOpen(false);
+                          }}
+                          className="w-full py-2 px-3 rounded-xl border border-salah/40 text-salah hover:bg-salah/10 font-body font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Keluar dari Akun Guru</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Drawer Footer */}

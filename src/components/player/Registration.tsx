@@ -24,8 +24,8 @@ interface RegistrationProps {
 }
 
 const FALLBACK_SCHOOLS: { id: number | null; name: string }[] = [
-  { id: 1, name: "Sekolah lain" },
-  { id: 2, name: "Umum / General visitor" },
+  { id: 1, name: "Umum / Instansi / General visitor" },
+  { id: 2, name: "Sekolah lain" },
   { id: null, name: "SDN 001 Tanjungpinang Kota" },
   { id: null, name: "SDN 002 Tanjungpinang Barat" },
   { id: null, name: "SMPN 1 Tanjungpinang" },
@@ -160,7 +160,7 @@ export const Registration: React.FC<RegistrationProps> = ({
           <div className="relative">
             <label className="flex items-center gap-1.5 font-display font-extrabold text-sm text-tinta mb-1">
               <SchoolIcon className="w-4 h-4 text-emas" />
-              <span>{lang === "id" ? "Asal Sekolah" : "School"}</span>
+              <span>{lang === "id" ? "Asal sekolah/instansi/umum" : "School / Institution / Public"}</span>
               <span className="text-salah">*</span>
               {isLoadingSchools && (
                 <Loader2 className="w-3 h-3 text-coklat animate-spin ml-1" />
@@ -175,7 +175,7 @@ export const Registration: React.FC<RegistrationProps> = ({
                 setShowSchoolDropdown(true);
               }}
               onFocus={() => setShowSchoolDropdown(true)}
-              placeholder={lang === "id" ? "Pilih atau ketik asal sekolah" : "Select or type school"}
+              placeholder={lang === "id" ? "Pilih atau ketik asal sekolah/instansi/umum" : "Select or type school / institution / public"}
               className="w-full px-3 py-1.5 rounded-xl border-2 border-tinta bg-kertas font-body font-bold text-sm text-tinta outline-none focus:bg-white focus:shadow-stiker-sm transition-all"
             />
 

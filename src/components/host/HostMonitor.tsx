@@ -54,31 +54,31 @@ export const HostMonitor: React.FC<HostMonitorProps> = ({
   const seconds = secondsRemaining % 60;
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col justify-between h-full max-h-full min-h-0 overflow-y-auto p-4 sm:p-6">
+    <div className="w-full max-w-6xl mx-auto flex flex-col min-h-0 overflow-y-auto p-2 sm:p-6 pb-safe space-y-4">
       {/* Top Navbar */}
-      <div className="flex items-center justify-between pb-4 border-b-3 border-tinta mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b-2 sm:border-b-3 border-tinta">
         <LogoInderasakti variant="horizontal" />
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {onBackToRooms && (
             <button
               type="button"
               onClick={onBackToRooms}
-              className="px-3.5 py-1.5 rounded-xl border-2 border-tinta bg-kertas-putih font-body text-xs font-bold text-tinta hover:bg-kraft/70 btn-pressable shadow-stiker-sm"
+              className="px-3 py-1.5 rounded-xl border-2 border-tinta bg-kertas-putih font-body text-xs font-bold text-tinta hover:bg-kraft/70 btn-pressable shadow-stiker-sm"
             >
               ← Daftar Ruangan
             </button>
           )}
 
           {/* Room PIN Tag */}
-          <div className="px-3.5 py-1.5 rounded-xl bg-kuning border-2 border-tinta font-label font-bold text-sm text-tinta shadow-stiker-sm">
+          <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl bg-kuning border-2 border-tinta font-label font-bold text-xs sm:text-sm text-tinta shadow-stiker-sm">
             PIN: {roomCode}
           </div>
 
           {/* Countdown Clock */}
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-kertas-putih border-2 border-tinta shadow-stiker-sm">
-            <Clock className="w-4 h-4 text-coklat" />
-            <span className="font-label font-black text-base text-tinta">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-xl bg-kertas-putih border-2 border-tinta shadow-stiker-sm">
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-coklat" />
+            <span className="font-label font-black text-sm sm:text-base text-tinta">
               {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
             </span>
           </div>
@@ -87,7 +87,7 @@ export const HostMonitor: React.FC<HostMonitorProps> = ({
           <button
             type="button"
             onClick={onEndSession}
-            className="px-4 py-2 rounded-xl bg-salah text-white border-2 border-tinta font-display font-black text-sm btn-pressable shadow-stiker-sm hover:bg-[#A92E2E]"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-salah text-white border-2 border-tinta font-display font-black text-xs sm:text-sm btn-pressable shadow-stiker-sm hover:bg-[#A92E2E]"
           >
             Akhiri Sesi ➔
           </button>
@@ -95,19 +95,19 @@ export const HostMonitor: React.FC<HostMonitorProps> = ({
       </div>
 
       {/* Main Split Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 my-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 flex-1">
         {/* Left Side: Live Leaderboard (Receipt Style) */}
         <div className="lg:col-span-6 flex flex-col">
-          <PaperCard variant="receipt" className="p-5 flex-1 flex flex-col">
+          <PaperCard variant="receipt" className="p-4 sm:p-5 flex-1 flex flex-col">
             <div className="flex items-center justify-between pb-3 border-b-2 border-dashed border-kraft mb-3">
               <div className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-emas" />
-                <h3 className="font-display font-black text-xl text-tinta">
+                <h3 className="font-display font-black text-lg sm:text-xl text-tinta">
                   Klasemen Langsung (Live Leaderboard)
                 </h3>
               </div>
               <span className="font-label text-xs text-coklat font-bold">
-                {rankings && rankings.length > 0 ? `${rankings.length} Peserta` : "8 Peserta"}
+                {rankings && rankings.length > 0 ? `${rankings.length} Peserta` : "0 Peserta"}
               </span>
             </div>
 

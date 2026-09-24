@@ -45,11 +45,11 @@ export const AnswerFeedback: React.FC<AnswerFeedbackProps> = ({
   return (
     <div
       onClick={onNext}
-      className="w-full max-w-md mx-auto flex flex-col justify-between h-full max-h-full px-3 py-1.5 min-h-0 overflow-hidden pb-safe cursor-pointer select-none"
+      className="w-full max-w-md mx-auto flex flex-col justify-between h-full max-h-full px-3 pt-3 sm:pt-4 pb-2 min-h-0 overflow-hidden pb-safe cursor-pointer select-none"
     >
       {/* Top Banner (Quizizz Flash Banner) */}
       <div
-        className={`w-full py-2.5 px-3.5 rounded-2xl border-2 sm:border-3 border-tinta shadow-stiker flex items-center justify-between text-white animate-stamp-drop ${
+        className={`w-full py-2.5 px-3.5 rounded-2xl border-2 sm:border-3 border-tinta shadow-stiker flex items-center justify-between text-white animate-banner-drop ${
           isCorrect ? "bg-benar" : "bg-salah"
         }`}
       >
