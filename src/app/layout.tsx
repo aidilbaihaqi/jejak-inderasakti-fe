@@ -109,6 +109,9 @@ export const metadata: Metadata = {
     shortcut: "/logo.webp",
     apple: [{ url: "/logo.webp", sizes: "180x180", type: "image/webp" }],
   },
+  verification: {
+    google: "RjgNEbyKbt1Gv3yPwxe55d8P8o9ZZDiGpREZUOHDFiQ",
+  },
   category: "education",
 };
 
