@@ -19,10 +19,13 @@ export const API_CONFIG = {
     if (process.env.NEXT_PUBLIC_WS_URL) {
       return process.env.NEXT_PUBLIC_WS_URL;
     }
-    if (typeof window === "undefined") return "wss://187.127.223.166.sslip.io/ws";
-    // In local development, direct to backend WebSocket as Next.js rewrites do not support WS upgrades
+    // The API is on its own subdomain (api.penyengatadventure.tech), not the frontend's origin,
+    // so — unlike /api, which Next.js rewrites proxy same-origin — WS must target it directly
+    // (rewrites don't support the upgrade). This fallback only matters if NEXT_PUBLIC_WS_URL was
+    // left unset at build time; the Docker image always sets it (see Dockerfile / deploy/README.md).
+    if (typeof window === "undefined") return "wss://api.penyengatadventure.tech/ws";
     if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      return "wss://187.127.223.166.sslip.io/ws";
+      return "ws://localhost:8080/ws";
     }
     const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
     return `${proto}//${window.location.host}/ws`;
