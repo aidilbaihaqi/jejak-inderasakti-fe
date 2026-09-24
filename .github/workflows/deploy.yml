@@ -1,0 +1,40 @@
+name: Deploy
+
+on:
+  push:
+    branches: [deploy]
+
+jobs:
+  build-check:
+    name: Build check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+
+  # Never runs on pull_request, only on a real push to deploy — so a fork/PR can't exfiltrate
+  # DEPLOY_SSH_KEY by adding a step to this job.
+  deploy:
+    name: Deploy to VPS
+    needs: build-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/fe
+            git fetch origin deploy
+            git reset --hard origin/deploy
+            make up
