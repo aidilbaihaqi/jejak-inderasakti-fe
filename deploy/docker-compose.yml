@@ -1,0 +1,28 @@
+# Staging / production stack: the Next.js frontend, reverse-proxied by the Caddy instance that
+# lives in the jejak-inderasakti-be stack. Values come from deploy/.env (not committed); see
+# deploy/.env.example and deploy/README.md.
+#
+# jejak_net is created once (`make -C ../jejak-inderasakti-be deploy-network`) and shared with the
+# backend stack — this file doesn't own it, so `docker compose down` here never removes it.
+name: jejak-web
+
+networks:
+  jejak_net:
+    external: true
+
+services:
+  web:
+    build:
+      context: ..
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://api:8080}
+        NEXT_PUBLIC_WS_URL: wss://${API_DOMAIN:?set API_DOMAIN in deploy/.env}/ws
+    restart: unless-stopped
+    networks:
+      - jejak_net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
