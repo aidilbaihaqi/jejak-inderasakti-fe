@@ -64,8 +64,8 @@ export const Registration: React.FC<RegistrationProps> = ({
     } else {
       setSchoolId?.(null);
       if (gradeLevel === "UMUM") {
-        setGradeLevel("SMP");
-        setGradeClass("8");
+        setGradeLevel("");
+        setGradeClass("");
       }
     }
   };

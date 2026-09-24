@@ -96,7 +96,7 @@ export default function App() {
   const [playerName, setPlayerName] = useState("");
   const [school, setSchool] = useState("");
   const [schoolId, setSchoolId] = useState<number | null>(null);
-  const [gradeLevel, setGradeLevel] = useState<string>("SMP");
+  const [gradeLevel, setGradeLevel] = useState<string>("");
   const [gradeClass, setGradeClass] = useState("");
   const [avatarId, setAvatarId] = useState("1");
   const [currentStage, setCurrentStage] = useState(1);
@@ -171,7 +171,6 @@ export default function App() {
         getRoomByPin(cleanUrlPin)
           .then((roomInfo) => {
             if (roomInfo.status === "lobby" || roomInfo.status === "running") {
-              setGradeLevel(roomInfo.jenjang);
               setCurrentStep("daftar-peserta");
             }
           })
@@ -623,14 +622,12 @@ export default function App() {
         setPinError("Sesi untuk ruangan ini sudah berakhir. Silakan minta Host/Guru membuat ruangan baru.");
         return;
       }
-      setGradeLevel(roomInfo.jenjang);
       setCurrentStep("daftar-peserta");
     } catch (err: any) {
       console.warn("Real room check failed:", err);
       // Only fall back to local if it's an active local room that hasn't ended
       const localMatch = hostRooms.find((r) => r.pin === cleanPin);
       if (localMatch && localMatch.status !== "FINISHED" && localMatch.id.startsWith("room-")) {
-        setGradeLevel(localMatch.gradeLevel);
         setCurrentStep("daftar-peserta");
       } else {
         if (localMatch) {
