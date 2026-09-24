@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { PaperCard } from "../ui/PaperCard";
 import { StickerButton } from "../ui/StickerButton";
 import { AvatarIcon, AVATAR_LIST } from "../assets/AvatarCollection";
@@ -23,15 +23,15 @@ interface RegistrationProps {
   lang: "id" | "en";
 }
 
-const FALLBACK_SCHOOLS: { id: number | null; name: string }[] = [
-  { id: 1, name: "Umum / Instansi / General visitor" },
-  { id: 2, name: "Sekolah lain" },
-  { id: null, name: "SDN 001 Tanjungpinang Kota" },
-  { id: null, name: "SDN 002 Tanjungpinang Barat" },
-  { id: null, name: "SMPN 1 Tanjungpinang" },
-  { id: null, name: "SMPN 2 Tanjungpinang" },
-  { id: null, name: "SMAN 1 Tanjungpinang" },
-  { id: null, name: "SMAN 2 Tanjungpinang" },
+const FALLBACK_SCHOOLS: { id: number | null; name: string; jenjang?: string | null }[] = [
+  { id: 2, name: "Umum / Instansi / Pengunjung Umum", jenjang: "Umum" },
+  { id: 1, name: "Sekolah lain", jenjang: null },
+  { id: null, name: "SDN 001 Tanjungpinang Kota", jenjang: "SD" },
+  { id: null, name: "SDN 002 Tanjungpinang Barat", jenjang: "SD" },
+  { id: null, name: "SMPN 1 Tanjungpinang", jenjang: "SMP" },
+  { id: null, name: "SMPN 2 Tanjungpinang", jenjang: "SMP" },
+  { id: null, name: "SMAN 1 Tanjungpinang", jenjang: "SMA" },
+  { id: null, name: "SMAN 2 Tanjungpinang", jenjang: "SMA" },
 ];
 
 export const Registration: React.FC<RegistrationProps> = ({
@@ -54,6 +54,20 @@ export const Registration: React.FC<RegistrationProps> = ({
   const [showSchoolDropdown, setShowSchoolDropdown] = useState(false);
   const [apiSchools, setApiSchools] = useState<School[]>([]);
   const [isLoadingSchools, setIsLoadingSchools] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowSchoolDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -76,16 +90,70 @@ export const Registration: React.FC<RegistrationProps> = ({
     };
   }, []);
 
-  const schoolList: { id: number | null; name: string; jenjang?: string | null }[] = [
-    ...apiSchools,
-    ...FALLBACK_SCHOOLS.filter((fb) => !apiSchools.some((as) => as.name === fb.name)),
-  ];
+  // Deduplicate and normalize schools list
+  const schoolList = useMemo(() => {
+    const getSchoolKey = (item: { name: string }) => {
+      const lower = item.name.toLowerCase().trim();
+      if (lower.includes("umum") || lower.includes("general visitor")) return "key_umum";
+      if (lower.includes("sekolah lain") || lower.includes("other school")) return "key_sekolah_lain";
+      return lower;
+    };
+
+    const seen = new Set<string>();
+    const list: { id: number | null; name: string; jenjang?: string | null }[] = [];
+
+    // 1. Process API schools
+    for (const item of apiSchools) {
+      const key = getSchoolKey(item);
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push({
+          id: item.id,
+          name: key === "key_umum" ? "Umum / Instansi / Pengunjung Umum" : item.name,
+          jenjang: item.jenjang || (key === "key_umum" ? "Umum" : null),
+        });
+      }
+    }
+
+    // 2. Process Fallback schools (avoiding any duplicate keys)
+    for (const item of FALLBACK_SCHOOLS) {
+      const key = getSchoolKey(item);
+      if (!seen.has(key)) {
+        seen.add(key);
+        list.push(item);
+      }
+    }
+
+    return list;
+  }, [apiSchools]);
 
   const filteredSchools = school.trim()
     ? schoolList.filter((s) =>
         s.name.toLowerCase().includes(school.trim().toLowerCase())
       )
     : schoolList;
+
+  // Determine if participant is "Umum"
+  const isUmum =
+    school.trim().toLowerCase().includes("umum") ||
+    school.trim().toLowerCase().includes("general visitor") ||
+    schoolId === 2 ||
+    (gradeLevel as string) === "UMUM";
+
+  // Auto-sync gradeLevel with isUmum state
+  useEffect(() => {
+    if (isUmum) {
+      if ((gradeLevel as string) !== "UMUM") {
+        setGradeLevel("UMUM");
+        setGradeClass("-");
+      }
+    } else {
+      if ((gradeLevel as string) === "UMUM") {
+        setGradeLevel("SMP");
+        setGradeClass("8");
+      }
+    }
+  }, [isUmum, gradeLevel, setGradeLevel, setGradeClass]);
 
   const isFormValid = name.trim().length >= 2 && school.trim().length >= 2;
 
@@ -157,7 +225,7 @@ export const Registration: React.FC<RegistrationProps> = ({
           </div>
 
           {/* School Input */}
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <label className="flex items-center gap-1.5 font-display font-extrabold text-sm text-tinta mb-1">
               <SchoolIcon className="w-4 h-4 text-emas" />
               <span>{lang === "id" ? "Asal sekolah/instansi/umum" : "School / Institution / Public"}</span>
@@ -170,7 +238,8 @@ export const Registration: React.FC<RegistrationProps> = ({
               type="text"
               value={school}
               onChange={(e) => {
-                setSchool(e.target.value);
+                const val = e.target.value;
+                setSchool(val);
                 setSchoolId?.(null);
                 setShowSchoolDropdown(true);
               }}
@@ -189,6 +258,13 @@ export const Registration: React.FC<RegistrationProps> = ({
                       setSchool(item.name);
                       setSchoolId?.(item.id);
                       setShowSchoolDropdown(false);
+                      if (item.name.toLowerCase().includes("umum") || item.id === 2) {
+                        setGradeLevel("UMUM");
+                        setGradeClass("-");
+                      } else if (item.jenjang === "SD" || item.jenjang === "SMP" || item.jenjang === "SMA") {
+                        setGradeLevel(item.jenjang);
+                        setGradeClass(item.jenjang === "SD" ? "5" : item.jenjang === "SMP" ? "8" : "11");
+                      }
                     }}
                     className="w-full px-3.5 py-2 text-left font-body text-xs font-bold text-tinta hover:bg-kuning/30 transition-colors flex items-center justify-between"
                   >
@@ -204,55 +280,64 @@ export const Registration: React.FC<RegistrationProps> = ({
             )}
           </div>
 
-          {/* Level & Class Pickers */}
-          <div className="grid grid-cols-2 gap-3 pt-0.5">
-            <div>
-              <span className="block font-display font-extrabold text-xs text-tinta mb-1">
-                {lang === "id" ? "Jenjang" : "Level"}
-              </span>
-              <div className="grid grid-cols-3 gap-1">
-                {(["SD", "SMP", "SMA"] as const).map((lvl) => (
-                  <button
-                    key={lvl}
-                    type="button"
-                    onClick={() => {
-                      setGradeLevel(lvl);
-                      setGradeClass(lvl === "SD" ? "5" : lvl === "SMP" ? "8" : "11");
-                    }}
-                    className={`py-1.5 rounded-lg border-2 border-tinta font-display font-black text-xs transition-all btn-pressable ${
-                      gradeLevel === lvl
-                        ? "bg-kuning text-tinta shadow-stiker-sm"
-                        : "bg-kertas hover:bg-kraft/40 text-coklat"
-                    }`}
-                  >
-                    {lvl}
-                  </button>
-                ))}
+          {/* Level & Class Pickers: Hidden if participant is Umum */}
+          {!isUmum ? (
+            <div className="grid grid-cols-2 gap-3 pt-0.5 animate-fadeIn">
+              <div>
+                <span className="block font-display font-extrabold text-xs text-tinta mb-1">
+                  {lang === "id" ? "Jenjang" : "Level"}
+                </span>
+                <div className="grid grid-cols-3 gap-1">
+                  {(["SD", "SMP", "SMA"] as const).map((lvl) => (
+                    <button
+                      key={lvl}
+                      type="button"
+                      onClick={() => {
+                        setGradeLevel(lvl);
+                        setGradeClass(lvl === "SD" ? "5" : lvl === "SMP" ? "8" : "11");
+                      }}
+                      className={`py-1.5 rounded-lg border-2 border-tinta font-display font-black text-xs transition-all btn-pressable ${
+                        gradeLevel === lvl
+                          ? "bg-kuning text-tinta shadow-stiker-sm"
+                          : "bg-kertas hover:bg-kraft/40 text-coklat"
+                      }`}
+                    >
+                      {lvl}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div>
-              <span className="block font-display font-extrabold text-xs text-tinta mb-1">
-                {lang === "id" ? "Kelas" : "Class"}
-              </span>
-              <div className="grid grid-cols-3 gap-1">
-                {classOptions.map((cls) => (
-                  <button
-                    key={cls}
-                    type="button"
-                    onClick={() => setGradeClass(cls)}
-                    className={`py-1.5 rounded-lg border-2 border-tinta font-label font-bold text-xs transition-all btn-pressable ${
-                      gradeClass === cls
-                        ? "bg-kuning text-tinta shadow-stiker-sm"
-                        : "bg-kertas hover:bg-kraft/40 text-coklat"
-                    }`}
-                  >
-                    {cls}
-                  </button>
-                ))}
+              <div>
+                <span className="block font-display font-extrabold text-xs text-tinta mb-1">
+                  {lang === "id" ? "Kelas" : "Class"}
+                </span>
+                <div className="grid grid-cols-3 gap-1">
+                  {classOptions.map((cls) => (
+                    <button
+                      key={cls}
+                      type="button"
+                      onClick={() => setGradeClass(cls)}
+                      className={`py-1.5 rounded-lg border-2 border-tinta font-label font-bold text-xs transition-all btn-pressable ${
+                        gradeClass === cls
+                          ? "bg-kuning text-tinta shadow-stiker-sm"
+                          : "bg-kertas hover:bg-kraft/40 text-coklat"
+                      }`}
+                    >
+                      {cls}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="py-1.5 px-3 rounded-xl bg-kraft/40 border border-tinta/20 flex items-center justify-between text-xs text-coklat font-semibold animate-fadeIn">
+              <span>{lang === "id" ? "Kategori Peserta:" : "Category:"}</span>
+              <span className="font-display font-black text-tinta px-2 py-0.5 rounded-lg bg-kuning border border-tinta text-[11px] shadow-xs">
+                {lang === "id" ? "Pengunjung Umum" : "General Visitor"}
+              </span>
+            </div>
+          )}
         </PaperCard>
 
         {/* 12 Avatar Grid Selector */}
