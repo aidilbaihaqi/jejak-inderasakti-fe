@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
 
+  // Standalone output for a minimal production Docker image (see Dockerfile / deploy/README.md).
+  output: "standalone",
+
   // Proxy /api/* and /ws to the backend so the browser never makes
   // a cross-origin request (avoids CORS issues with the VPS).
   async rewrites() {
