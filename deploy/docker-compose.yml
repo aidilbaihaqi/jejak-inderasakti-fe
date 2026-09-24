@@ -21,7 +21,10 @@ services:
     networks:
       - jejak_net
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000"]
+      # 127.0.0.1, not localhost: the Next.js server binds HOSTNAME=0.0.0.0 (IPv4 only), but
+      # "localhost" in Alpine's /etc/hosts resolves to ::1 (IPv6) first, which nothing listens
+      # on — wget would get "connection refused" even though the server is healthy.
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000"]
       interval: 15s
       timeout: 5s
       retries: 5
