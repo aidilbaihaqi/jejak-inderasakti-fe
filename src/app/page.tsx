@@ -12,6 +12,12 @@ import { AnswerFeedback } from "@/components/player/AnswerFeedback";
 import { StageSummary } from "@/components/player/StageSummary";
 import { FinalPodium } from "@/components/player/FinalPodium";
 
+import {
+  PucukRebungMotif,
+  WajikMotif,
+  BungaCengkihMotif,
+} from "@/components/assets/MelayuMotifs";
+
 import { HostLogin } from "@/components/host/HostLogin";
 import { CreateRoom, HostRoom } from "@/components/host/CreateRoom";
 import { HostLobby } from "@/components/host/HostLobby";
@@ -871,11 +877,41 @@ export default function App() {
   const isHostView = currentStep.startsWith("host-");
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full bg-kertas text-tinta flex flex-col selection:bg-kuning selection:text-tinta relative overflow-hidden">
+    <div className="app-bg-textured h-[100dvh] max-h-[100dvh] w-full text-tinta flex flex-col selection:bg-kuning selection:text-tinta relative overflow-hidden">
+      {/* ========================================================
+          DECORATIVE SONGKET MOTIFS (fills wide-viewport gutters
+          around the mobile-first column; hidden on small screens)
+      ======================================================== */}
+      <div
+        className="hidden md:block fixed inset-0 z-0 pointer-events-none select-none overflow-hidden"
+        aria-hidden="true"
+      >
+        <PucukRebungMotif
+          size={440}
+          color="#C8922A"
+          className="absolute -left-28 -top-28 opacity-[0.07] -rotate-[10deg]"
+        />
+        <WajikMotif
+          size={340}
+          color="#8B5A2B"
+          className="absolute -right-20 top-1/4 opacity-[0.06] rotate-6"
+        />
+        <BungaCengkihMotif
+          size={300}
+          color="#C8922A"
+          className="absolute -left-14 bottom-[-70px] opacity-[0.07] rotate-3"
+        />
+        <PucukRebungMotif
+          size={320}
+          color="#8B5A2B"
+          className="absolute -right-16 -bottom-20 opacity-[0.06] rotate-[16deg]"
+        />
+      </div>
+
       {/* ========================================================
           MOBILE-FRIENDLY TOP NAVBAR (Compact, fixed height)
       ======================================================== */}
-      <header className="flex-shrink-0 z-40 w-full bg-kertas-putih/95 backdrop-blur-md border-b-2 border-tinta/30 px-3.5 py-1.5 sm:py-2 shadow-xs">
+      <header className="relative z-40 flex-shrink-0 w-full bg-kertas-putih/95 backdrop-blur-md border-b-2 border-tinta/30 px-3.5 py-1.5 sm:py-2 shadow-xs">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Brand Identity */}
           <button
@@ -975,7 +1011,7 @@ export default function App() {
       {/* ========================================================
           MAIN VIEW AREA (Full Screen Mobile Native First - No Scrolling)
       ======================================================== */}
-      <main className="w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+      <main className="relative z-10 w-full flex-1 flex flex-col min-h-0 overflow-hidden">
         {!isHostView ? (
           /* Native Player Screen: 100% viewport, strictly no vertical scroll */
           <div className="w-full max-w-md mx-auto flex-1 flex flex-col min-h-0 overflow-hidden">

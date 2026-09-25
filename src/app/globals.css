@@ -43,11 +43,27 @@
 html, body {
   background-color: var(--kertas);
   color: var(--tinta);
-  background-image: radial-gradient(#EAD7B0 1px, transparent 1px);
-  background-size: 20px 20px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
+}
+
+/* Songket-inspired textured paper background: warm corner glows layered
+   over a tiled Melayu diamond (wajik) motif and the original dot grain.
+   Applied to the app shell itself (not html/body), since the shell paints
+   a solid surface over the document background. */
+.app-bg-textured {
+  background-color: var(--kertas);
+  background-image:
+    radial-gradient(circle at 8% 6%, rgba(200, 146, 42, 0.16), transparent 40%),
+    radial-gradient(circle at 93% 12%, rgba(255, 198, 41, 0.16), transparent 38%),
+    radial-gradient(circle at 90% 92%, rgba(196, 88, 51, 0.12), transparent 42%),
+    radial-gradient(circle at 5% 90%, rgba(200, 146, 42, 0.14), transparent 40%),
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='104'%20height='104'%20viewBox='0%200%20104%20104'%3E%3Cg%20fill='none'%20stroke='%23C8922A'%20stroke-opacity='0.13'%20stroke-width='1.3'%3E%3Cpath%20d='M52%208%20L96%2052%20L52%2096%20L8%2052%20Z'/%3E%3Cpath%20d='M52%2026%20L74%2052%20L52%2074%20L30%2052%20Z'%20stroke-opacity='0.3'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(#EAD7B0 1.2px, transparent 1.2px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 104px 104px, 20px 20px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat, repeat;
 }
 
 /* Mobile Safe Areas */
