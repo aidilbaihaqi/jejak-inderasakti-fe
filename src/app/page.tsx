@@ -122,7 +122,7 @@ export default function App() {
 
   // Host Multi-Room State (persisted to localStorage)
   const [hostToken, setHostToken] = useState<string | null>(null);
-  const [hostEmail, setHostEmail] = useState("host0@email.com");
+  const [hostEmail, setHostEmail] = useState("");
   const [hostRooms, setHostRooms] = useState<HostRoom[]>(() => {
     if (typeof window !== "undefined") {
       try {

@@ -14,8 +14,8 @@ export const HostLogin: React.FC<HostLoginProps> = ({
   onLoginSuccess,
   onBackToPlayer,
 }) => {
-  const [email, setEmail] = useState("host0@email.com");
-  const [password, setPassword] = useState("host123456");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -71,6 +71,7 @@ export const HostLogin: React.FC<HostLoginProps> = ({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="nama@email.com"
                 required
                 className="w-full px-4 py-2.5 rounded-xl border-2 border-tinta bg-kertas font-body font-bold text-sm text-tinta outline-none focus:bg-white focus:shadow-stiker-sm transition-all"
               />
@@ -86,6 +87,7 @@ export const HostLogin: React.FC<HostLoginProps> = ({
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Masukkan kata sandi"
                 required
                 className="w-full px-4 py-2.5 rounded-xl border-2 border-tinta bg-kertas font-body font-bold text-sm text-tinta outline-none focus:bg-white focus:shadow-stiker-sm transition-all"
               />
