@@ -506,13 +506,15 @@ export default function App() {
     return Array.from(listMap.values());
   }, [playerName, avatarId, playerSocket.roomState?.players, playerSocket.joinedPlayers, pin, localRoomPlayers]);
 
-  // Cache the latest rankings so they are never lost when changing steps or ending room
-  const [latestRankings, setLatestRankings] = useState<WsRanking[]>([]);
+  // Cache the latest rankings per-room so they are never lost when changing steps or ending room
+  // Keyed by selectedRoomId to prevent cross-room data bleeding
+  const [latestRankingsMap, setLatestRankingsMap] = useState<Record<string, WsRanking[]>>({});
   useEffect(() => {
-    if (hostSocket.rankings && hostSocket.rankings.length > 0) {
-      setLatestRankings(hostSocket.rankings);
+    if (selectedRoomId && hostSocket.rankings && hostSocket.rankings.length > 0) {
+      setLatestRankingsMap((prev) => ({ ...prev, [selectedRoomId]: hostSocket.rankings }));
     }
-  }, [hostSocket.rankings]);
+  }, [hostSocket.rankings, selectedRoomId]);
+  const latestRankings = selectedRoomId ? (latestRankingsMap[selectedRoomId] ?? []) : [];
 
   // Sync playerCount in hostRooms whenever players join
   useEffect(() => {
@@ -549,7 +551,10 @@ export default function App() {
   }, [hostRooms, localRoomPlayers, selectedRoomId, mappedHostPlayers.length]);
 
   // Map podium results from live WS rankings (with correct_count) or podium (top-3 only)
+  // Uses per-room cached rankings to avoid cross-room data bleeding
   const mappedPodiumResults = useMemo(() => {
+    // Prefer live socket data for the currently selected room;
+    // fall back to per-room cached rankings (never cross-room)
     const effectiveRankings =
       hostSocket.rankings && hostSocket.rankings.length > 0
         ? hostSocket.rankings

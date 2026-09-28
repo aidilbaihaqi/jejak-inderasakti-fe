@@ -151,6 +151,17 @@ export function useGameSocket({
     setStatus("disconnected");
   }, []);
 
+  // Reset all room-scoped state whenever we switch to a different room or token
+  useEffect(() => {
+    setRoomState(null);
+    setActiveQuestion(null);
+    setLastResult(null);
+    setRankings([]);
+    setPodium([]);
+    setJoinedPlayers([]);
+    setLastError(null);
+  }, [token, roomId]);
+
   useEffect(() => {
     if (autoConnect && token) {
       connect();
